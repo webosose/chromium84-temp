@@ -156,7 +156,8 @@ bool OSCrypt::DecryptString16(const std::string& ciphertext,
 
 // static
 bool OSCrypt::EncryptString(const std::string& plaintext,
-                            std::string* ciphertext) {
+                            std::string* ciphertext,
+                            bool use_unique_encryption_key) {
   if (plaintext.empty()) {
     ciphertext->clear();
     return true;
@@ -165,8 +166,16 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
   // If we are able to create a V11 key (i.e. a KeyStorage was available), then
   // we'll use it. If not, we'll use V10.
   Version version = Version::V11;
+#if defined(USE_WEBOS_DILE_CRYPTO)
+  std::unique_ptr<crypto::SymmetricKey> encryption_key =
+      use_unique_encryption_key ? GetUniqueEncryptionKey()
+                                : GetEncryptionKey(version);
+  if (use_unique_encryption_key && !encryption_key)
+    return false;
+#else
   std::unique_ptr<crypto::SymmetricKey> encryption_key(
       GetEncryptionKey(version));
+#endif
   if (!encryption_key) {
     version = Version::V10;
     encryption_key = GetEncryptionKey(version);
@@ -190,7 +199,8 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
 
 // static
 bool OSCrypt::DecryptString(const std::string& ciphertext,
-                            std::string* plaintext) {
+                            std::string* plaintext,
+                            bool use_unique_encryption_key) {
   if (ciphertext.empty()) {
     plaintext->clear();
     return true;
@@ -213,8 +223,15 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
     return true;
   }
 
+#if defined(USE_WEBOS_DILE_CRYPTO)
+  std::unique_ptr<crypto::SymmetricKey> encryption_key =
+      use_unique_encryption_key ? GetUniqueEncryptionKey()
+                                : GetEncryptionKey(version);
+#else
   std::unique_ptr<crypto::SymmetricKey> encryption_key(
       GetEncryptionKey(version));
+#endif
+
   if (!encryption_key) {
     VLOG(1) << "Decryption failed: could not get the key";
     return false;

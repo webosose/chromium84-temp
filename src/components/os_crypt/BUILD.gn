@@ -30,6 +30,12 @@ if (use_gnome_keyring) {
   }
 }
 
+if (use_webos_dile_crypto) {
+  pkg_config("dile-libs") {
+    packages = [ "crypto" ]
+  }
+}
+
 component("os_crypt") {
   sources = [
     "keychain_password_mac.h",
@@ -114,6 +120,11 @@ component("os_crypt") {
       deps += [ "//dbus" ]
       defines += [ "USE_KWALLET" ]
     }
+  }
+
+  if (use_webos_dile_crypto) {
+    configs += [ ":dile-libs" ]
+    sources += [ "os_crypt_dile_crypto.cc" ]
   }
 }
 

@@ -413,7 +413,11 @@ void AppRuntimeContentBrowserClient::ConfigureNetworkContextParams(
                       &disk_cache_size);
   network_context_params->cookie_path =
       context->GetPath().Append(kCookieStoreFile);
+#if defined(USE_WEBOS_DILE_CRYPTO)
+  network_context_params->enable_encrypted_cookies = true;
+#else
   network_context_params->enable_encrypted_cookies = false;
+#endif
   network_context_params->custom_proxy_config_client_receiver =
       custom_proxy_config_client_.BindNewPipeAndPassReceiver();
   network_context_params->network_delegate_request =

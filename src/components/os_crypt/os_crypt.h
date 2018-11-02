@@ -16,6 +16,11 @@
 #include "build/build_config.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+#if defined(USE_WEBOS_DILE_CRYPTO)
+#include "crypto/symmetric_key.h"
+#endif
+
 class KeyStorageLinux;
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
@@ -64,14 +69,16 @@ class OSCrypt {
   // Encrypt a string.
   static COMPONENT_EXPORT(OS_CRYPT) bool EncryptString(
       const std::string& plaintext,
-      std::string* ciphertext);
+      std::string* ciphertext,
+      bool use_unique_encryption_key = false);
 
   // Decrypt an array of bytes obtained with EnctryptString back into a string.
   // Note that the input (first argument) is a std::string, so you need to first
   // get your (binary) data into a string.
   static COMPONENT_EXPORT(OS_CRYPT) bool DecryptString(
       const std::string& ciphertext,
-      std::string* plaintext);
+      std::string* plaintext,
+      bool use_unique_encryption_key = false);
 
 #if defined(OS_WIN)
   // Registers preferences used by OSCrypt.
@@ -128,6 +135,14 @@ class OSCrypt {
 #endif
 
  private:
+#if defined(USE_WEBOS_DILE_CRYPTO)
+  // Get dile error status in string from integer error code
+  static const char* GetDileError(int);
+  // Get Unique Encryption Key for each device.
+  static std::unique_ptr<crypto::SymmetricKey> GetUniqueEncryptionKey();
+  // Unique password for each device. for security issue, set the private.
+  static std::string unique_password_;
+#endif
   DISALLOW_IMPLICIT_CONSTRUCTORS(OSCrypt);
 };
 

@@ -45,12 +45,20 @@ bool CookieOSCryptoDelegate::ShouldEncrypt() {
 
 bool CookieOSCryptoDelegate::EncryptString(const std::string& plaintext,
                                            std::string* ciphertext) {
+#if defined(USE_WEBOS_DILE_CRYPTO)
+  return OSCrypt::EncryptString(plaintext, ciphertext, true);
+#else
   return OSCrypt::EncryptString(plaintext, ciphertext);
+#endif
 }
 
 bool CookieOSCryptoDelegate::DecryptString(const std::string& ciphertext,
                                            std::string* plaintext) {
+#if defined(USE_WEBOS_DILE_CRYPTO)
+  return OSCrypt::DecryptString(ciphertext, plaintext, true);
+#else
   return OSCrypt::DecryptString(ciphertext, plaintext);
+#endif
 }
 
 // Using a LazyInstance is safe here because this class is stateless and

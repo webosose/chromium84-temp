@@ -942,6 +942,7 @@ bool SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     std::string value;
     std::string encrypted_value = smt.ColumnString(4);
     if (!encrypted_value.empty() && crypto_) {
+      VLOG(1) << "v7 Read Decrypt Cookie String started";
       scoped_refptr<TimeoutTracker> timeout_tracker =
           TimeoutTracker::Begin(client_task_runner());
       bool decrypt_ok = crypto_->DecryptString(encrypted_value, &value);
@@ -951,8 +952,10 @@ bool SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
         ok = false;
         continue;
       }
+      VLOG(1) << "v7 Read Decrypt Cookie String completed";
     } else {
       value = smt.ColumnString(3);
+      VLOG(1) << "v6 Read Decrypt Cookie String completed";
     }
     std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
         smt.ColumnString(2),                           // name
@@ -1233,6 +1236,7 @@ void SQLitePersistentCookieStore::Backend::DoCommit() {
           add_smt.BindString(1, po->cc().Domain());
           add_smt.BindString(2, po->cc().Name());
           if (crypto_ && crypto_->ShouldEncrypt()) {
+            VLOG(1) << "v7 Write Encrypt Cookie String started";
             std::string encrypted_value;
             if (!crypto_->EncryptString(po->cc().Value(), &encrypted_value)) {
               DLOG(WARNING) << "Could not encrypt a cookie, skipping add.";
@@ -1240,6 +1244,7 @@ void SQLitePersistentCookieStore::Backend::DoCommit() {
               trouble = true;
               continue;
             }
+            VLOG(1) << "v7 Write Encrypt Cookie String completed";
             add_smt.BindCString(3, "");  // value
             // BindBlob() immediately makes an internal copy of the data.
             add_smt.BindBlob(4, encrypted_value.data(),
@@ -1247,6 +1252,7 @@ void SQLitePersistentCookieStore::Backend::DoCommit() {
           } else {
             add_smt.BindString(3, po->cc().Value());
             add_smt.BindBlob(4, "", 0);  // encrypted_value
+            VLOG(1) << "v6 Write Non-encrypt Cookie String completed";
           }
           add_smt.BindString(5, po->cc().Path());
           add_smt.BindInt64(6, po->cc().ExpiryDate().ToInternalValue());
