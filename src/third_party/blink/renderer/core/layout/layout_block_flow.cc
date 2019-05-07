@@ -4603,7 +4603,11 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
         }
         // y coordinate is above first root line box, so return the start of the
         // first
+#if defined(OS_WEBOS)
+        return PositionWithAffinity(PositionForBox(box, false));
+#else
         return PositionWithAffinity(PositionForBox(box, true));
+#endif
       }
     }
 
