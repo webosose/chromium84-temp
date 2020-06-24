@@ -1,0 +1,39 @@
+Open Source Software Package:
+- name: webOSOSE-chromium79
+  version: 79.0.3945.79
+  source: https://github.com/webosose/chromium79
+  license :
+  - BSD
+  - Apache 2.0
+  - Apple Public Source License 2.0
+  - MPL 2.0
+  - GPL v2
+  - MIT
+  - LGPL 2
+  - LGPL 2.1
+  - BSDish
+  - New BSD
+  - BSD 2-Clause License
+  - BSD 3-Clause
+  - Custom license "inspired by the BSD, Artistic, and IJG (Independent JPEG Group) licenses"
+  - Zlib
+  - Android Software Development Kit License
+  - MPL 1.1
+  - EPL 1.0
+  - Common Public License 1.0
+  - X11
+  - SGI Free Software License B
+  - University of Illinois
+  - NCSA Open Source
+  - GPL
+  - IJG License
+  - LGPL3
+  - GPL3
+  - OCULUS SDK LICENSE
+  - libpng license
+  - Public Domain
+  - NodeJS
+  - SIL OPEN FONT LICENSE
+  - Bitstream Vera Fonts Copyright
+  - Microsoft Permissive License
+  - Artistic license
