@@ -1106,7 +1106,16 @@ bool SelectionController::HandleMouseReleaseEvent(
     handled = true;
   }
 
+#if !defined (OS_WEBOS)
+  // This function gets selection from SelectionEditor::GetSelectionInDOMTree().
+  // It also overwrites cached selection range in TextControlElement.
+  // If text was modified outside of Blink (by js) then selection in
+  // SelectionEditor will be set to 0. In this case we will get wrong selection
+  // and cursor position will be at 0 point.
+  // Without this call we restore selection to previous value later with
+  // TextControlElement::RestoreCachedSelection().
   Selection().NotifyTextControlOfSelectionChange(SetSelectionBy::kUser);
+#endif
 
   Selection().SelectFrameElementInParentIfFullySelected();
 
