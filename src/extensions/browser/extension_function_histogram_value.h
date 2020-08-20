@@ -1534,6 +1534,11 @@ enum HistogramValue {
   DECLARATIVENETREQUEST_UPDATEENABLEDRULESETS = 1471,
   DECLARATIVENETREQUEST_GETENABLEDRULESETS = 1472,
   TERMINALPRIVATE_OPENWINDOW = 1473,
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  WEBVIEWINTERNAL_RESUME = 1474,
+  WEBVIEWINTERNAL_SUSPEND = 1475,
+  ///@}
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

@@ -46,7 +46,12 @@ enum class RendererFactoryType {
   kCast = 5,             // CastRendererClientFactory
   kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
   kFuchsia = 7,          // FuchsiaRendererFactory
+#if defined(USE_NEVA_MEDIA)
+  kNevaMediaPlayer = 8,  // NevaMediaPlayerRendererFactory
+  kMaxValue = kNevaMediaPlayer,
+#else
   kMaxValue = kFuchsia,
+#endif
 };
 
 class MEDIA_EXPORT RendererFactorySelector {

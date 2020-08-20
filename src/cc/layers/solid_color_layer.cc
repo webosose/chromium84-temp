@@ -17,7 +17,26 @@ scoped_refptr<SolidColorLayer> SolidColorLayer::Create() {
   return base::WrapRefCounted(new SolidColorLayer());
 }
 
+#if defined(USE_NEVA_PUNCH_HOLE)
+void SolidColorLayer::PushPropertiesTo(LayerImpl* layer) {
+  Layer::PushPropertiesTo(layer);
+
+  SolidColorLayerImpl* layer_impl = static_cast<SolidColorLayerImpl*>(layer);
+  layer_impl->SetForceDrawTransparentColor(force_draw_transparent_color_);
+}
+
+void SolidColorLayer::SetForceDrawTransparentColor(bool force_draw) {
+  if (force_draw_transparent_color_ == force_draw)
+    return;
+
+  force_draw_transparent_color_ = force_draw;
+  SetNeedsCommit();
+}
+
+SolidColorLayer::SolidColorLayer() : force_draw_transparent_color_(false) {}
+#else
 SolidColorLayer::SolidColorLayer() = default;
+#endif  // USE_NEVA_PUNCH_HOLE
 
 SolidColorLayer::~SolidColorLayer() = default;
 

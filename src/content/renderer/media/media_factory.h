@@ -115,6 +115,9 @@ class MediaFactory {
       media::MediaLog* media_log,
       bool use_media_player,
       bool enable_mojo_renderer,
+#if defined(USE_NEVA_MEDIA)
+      bool use_neva_media,
+#endif
       media::DecoderFactory* decoder_factory,
       std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
       base::WeakPtr<media::MediaObserver>* out_media_observer);

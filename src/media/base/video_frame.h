@@ -469,6 +469,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     return data_[plane];
   }
 
+#if defined(USE_NEVA_WEBRTC)
+  size_t data_size(size_t plane) {
+    DCHECK(IsValidPlane(format(), plane));
+    DCHECK(IsMappable());
+    return data_size_[plane];
+  }
+
+  uint32_t get_decoder_id() const { return decoder_id_; }
+  void set_decoder_id(uint32_t decoder_id) { decoder_id_ = decoder_id; }
+#endif
+
   const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const {
     return wrapped_frame_ ? wrapped_frame_->ycbcr_info() : ycbcr_info_;
   }
@@ -646,6 +657,16 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // to std::unique_ptr<uint8_t, AlignedFreeDeleter> after refactoring
   // VideoFrame.
   uint8_t* data_[kMaxPlanes];
+
+#if defined(USE_NEVA_WEBRTC)
+  // Array of size of data that is pointed by data_ pointer above.
+  // This will be most usefull when we have external data wrapped in a
+  // video frame using WrapExternalData
+  size_t data_size_[kMaxPlanes];
+
+  // Used for associating the decoder with the web media player
+  uint32_t decoder_id_ = 0;
+#endif
 
   // Native texture mailboxes, if this is a IsTexture() frame.
   gpu::MailboxHolder mailbox_holders_[kMaxPlanes];

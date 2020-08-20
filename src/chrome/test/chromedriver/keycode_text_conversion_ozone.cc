@@ -28,7 +28,7 @@ bool ConvertKeyCodeToText
      int modifiers,
      std::string* text,
      std::string* error_msg) {
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) && !defined(USE_NEVA_APPRUNTIME)
   ui::KeyboardLayoutEngine* keyboard_layout_engine =
       ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
 #else

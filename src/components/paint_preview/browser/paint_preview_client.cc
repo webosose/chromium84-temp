@@ -105,7 +105,12 @@ PaintPreviewClient::PaintPreviewData::~PaintPreviewData() = default;
 
 PaintPreviewClient::PaintPreviewData&
 PaintPreviewClient::PaintPreviewData::operator=(
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+    PaintPreviewData&& rhs) = default;
+#else
     PaintPreviewData&& rhs) noexcept = default;
+#endif
 
 PaintPreviewClient::PaintPreviewData::PaintPreviewData(
     PaintPreviewData&& other) noexcept = default;

@@ -618,6 +618,12 @@ void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
 }
 #endif  // defined(USE_OZONE)
 
+#if defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+void GpuProcessHost::SendGpuProcessMessage(IPC::Message* message) {
+  Send(message);
+}
+#endif  // defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+
 // static
 GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -904,6 +910,13 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+#if defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnMessageReceived(message);
+#endif  // defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+
   return true;
 }
 

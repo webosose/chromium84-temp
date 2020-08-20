@@ -1566,6 +1566,9 @@ bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
 // Accessibility----------------------------------------------------------------
 
 ViewAccessibility& View::GetViewAccessibility() {
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  NOTREACHED();
+#endif
   if (!view_accessibility_)
     view_accessibility_ = ViewAccessibility::Create(this);
   return *view_accessibility_;
@@ -1613,6 +1616,10 @@ bool View::HandleAccessibleAction(const ui::AXActionData& action_data) {
 }
 
 gfx::NativeViewAccessible View::GetNativeViewAccessible() {
+// Disabled for ozone-wayland port
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  return nullptr;
+#endif
   return GetViewAccessibility().GetNativeObject();
 }
 
@@ -1620,8 +1627,11 @@ void View::NotifyAccessibilityEvent(ax::mojom::Event event_type,
                                     bool send_native_event) {
   AXEventManager::Get()->NotifyViewEvent(this, event_type);
 
+// Disabled for ozone-wayland port
+#if !defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
   if (send_native_event && GetWidget())
     GetViewAccessibility().NotifyAccessibilityEvent(event_type);
+#endif
 
   OnAccessibilityEvent(event_type);
 }

@@ -83,6 +83,11 @@ class RootWindowController : public aura::client::WindowParentingClient,
 
   // aura::WindowTreeHostObserver:
   void OnHostCloseRequested(aura::WindowTreeHost* host) override;
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  void OnWindowHostStateChanged(aura::WindowTreeHost* host,
+                                ui::WidgetState new_state) override;
+  ///@}
 
   // AppWindowRegistry::Observer:
   void OnAppWindowRemoved(AppWindow* app_window) override;

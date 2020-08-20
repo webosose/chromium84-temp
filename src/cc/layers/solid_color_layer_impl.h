@@ -30,7 +30,12 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
                                SkColor color,
                                bool force_anti_aliasing_off,
                                SkBlendMode effect_blend_mode,
-                               AppendQuadsData* append_quads_data);
+                               AppendQuadsData* append_quads_data
+#if defined(USE_NEVA_PUNCH_HOLE)
+                               ,
+                               bool force_draw_transparent_color = false
+#endif  // USE_NEVA_PUNCH_HOLE
+                               );
 
   ~SolidColorLayerImpl() override;
 
@@ -39,11 +44,21 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
+#if defined(USE_NEVA_PUNCH_HOLE)
+  void PushPropertiesTo(LayerImpl* layer) override;
+  void SetForceDrawTransparentColor(bool force_draw);
+  bool IsForceDrawTransparentColor() const override;
+#endif  // USE_NEVA_PUNCH_HOLE
+
  protected:
   SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
   const char* LayerTypeAsString() const override;
+
+#if defined(USE_NEVA_PUNCH_HOLE)
+  bool force_draw_transparent_color_ = false;
+#endif  // USE_NEVA_PUNCH_HOLE
 };
 
 }  // namespace cc

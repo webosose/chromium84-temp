@@ -34,9 +34,15 @@ import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
 import("//build/timestamp.gni")
+import("//neva/neva.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
+
+if (use_memory_trace) {
+  import("//base/allocator/partition_allocator/neva/partition_trace.gni")
+  import("//base/trace_event/neva/memory_trace/memory_trace.gni")
+}
 
 if (is_mac) {
   # Used to generate fuzzer corpus :base_mach_port_rendezvous_convert_corpus.
@@ -2108,6 +2114,14 @@ jumbo_component("base") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
+
+  if (use_memory_trace) {
+    sources += partition_trace_sources + memory_trace_sources
+  }
+
+  if (use_lttng && current_toolchain == default_toolchain) {
+    deps += [ "//base/trace_event/neva/lttng:chromium_lttng_provider" ]
+  }
 }
 
 # Build flags for Control Flow Integrity
@@ -2217,13 +2231,14 @@ static_library("base_static") {
     "base_switches.h",
   ]
 
+  public_deps = []
   if (is_win) {
     sources += [
       "win/static_constants.cc",
       "win/static_constants.h",
     ]
 
-    public_deps = [ "//base/win:pe_image" ]
+    public_deps += [ "//base/win:pe_image" ]
 
     # Disable sanitizer coverage in win/pe_image.cc. It is called by the sandbox
     # before sanitizer coverage can initialize. http://crbug.com/484711
@@ -2235,6 +2250,12 @@ static_library("base_static") {
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  if (use_neva_appruntime) {
+    public_deps += [
+      "//base/neva",
+    ]
   }
 }
 

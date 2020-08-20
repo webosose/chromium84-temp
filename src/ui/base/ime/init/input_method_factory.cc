@@ -20,6 +20,11 @@
 #elif defined(USE_X11)
 #include "ui/base/ime/linux/input_method_auralinux.h"
 #elif defined(USE_OZONE)
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL) && defined(USE_AURA)
+#include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/base/ime/linux/neva/input_method_auralinux_neva.h"
+#include "ui/base/ui_base_neva_switches.h"
+#endif
 #include "ui/ozone/public/ozone_platform.h"
 #else
 #include "ui/base/ime/input_method_minimal.h"
@@ -66,6 +71,13 @@ std::unique_ptr<InputMethod> CreateInputMethod(
 #elif defined(USE_X11)
   return std::make_unique<InputMethodAuraLinux>(delegate);
 #elif defined(USE_OZONE)
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL) && defined(USE_AURA)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNevaIme))
+    return std::make_unique<InputMethodAuraLinuxNeva>(delegate, widget);
+  else
+    return std::make_unique<InputMethodAuraLinux>(delegate);
+#endif
   return ui::OzonePlatform::GetInstance()->CreateInputMethod(delegate, widget);
 #else
   return std::make_unique<InputMethodMinimal>(delegate);

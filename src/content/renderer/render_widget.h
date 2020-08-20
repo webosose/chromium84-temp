@@ -330,6 +330,9 @@ class CONTENT_EXPORT RenderWidget
   void DidChangeCursor(const ui::Cursor& cursor) override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
+#if defined(USE_NEVA_APPRUNTIME)
+  void SetVisible(bool is_shown) override;
+#endif
   blink::WebScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
@@ -419,6 +422,10 @@ class CONTENT_EXPORT RenderWidget
   const RenderWidgetInputHandler& input_handler() const {
     return *input_handler_;
   }
+
+#if defined(USE_NEVA_APPRUNTIME)
+  bool has_ime_event_guard() const { return ime_event_guard_ != nullptr; }
+#endif
 
   void SetHandlingInputEvent(bool handling_input_event);
 

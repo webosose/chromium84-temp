@@ -22,7 +22,7 @@ void LinuxUI::SetInstance(LinuxUI* instance) {
 // Do not set IME instance for ozone as we delegate creating the input method to
 // OzonePlatforms instead. If this is set, OzonePlatform never sets a context
 // factory.
-#if !defined(USE_OZONE)
+#if !defined(USE_OZONE) || defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
   LinuxInputMethodContextFactory::SetInstance(instance);
 #endif
   SkiaFontDelegate::SetInstance(instance);

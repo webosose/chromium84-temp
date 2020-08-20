@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//media/media_options.gni")
+import("//neva/neva.gni")
 
 typemaps = [
   "//media/mojo/mojom/audio_decoder_config.typemap",
@@ -23,6 +24,14 @@ typemaps = [
   "//media/mojo/mojom/video_frame.typemap",
   "//media/mojo/mojom/status.typemap",
 ]
+
+if (use_neva_media) {
+  typemaps += [
+    "//media/mojo/mojom/neva/media_codec_capability.typemap",
+    "//media/mojo/mojom/neva/media_track_info.typemap",
+    "//media/mojo/mojom/neva/media_types_neva.typemap",
+  ]
+}
 
 if (enable_media_drm_storage) {
   typemaps += [ "//media/mojo/mojom/media_drm_storage.typemap" ]

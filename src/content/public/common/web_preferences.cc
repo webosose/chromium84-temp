@@ -9,6 +9,11 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/web/web_settings.h"
 
+#if defined(USE_NEVA_APPRUNTIME)
+#include "base/command_line.h"
+#include "content/public/common/content_neva_switches.h"
+#endif
+
 using blink::WebSettings;
 
 namespace content {
@@ -223,6 +228,13 @@ WebPreferences::WebPreferences()
       presentation_receiver(false),
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
+#if defined(USE_NEVA_APPRUNTIME)
+      x_frame_options_cross_origin_allowed(false),
+      allow_local_resource_load(false),
+#endif
+#if defined(USE_NEVA_MEDIA)
+      max_timeupdate_event_frequency(250),
+#endif
       autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
       preferred_color_scheme(blink::PreferredColorScheme::kNoPreference),
       low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
@@ -241,6 +253,11 @@ WebPreferences::WebPreferences()
   fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Impact");
   pictograph_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
+#if defined(USE_NEVA_APPRUNTIME)
+  allow_scripts_to_close_windows =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptsToCloseWindows);
+#endif
 }
 
 WebPreferences::WebPreferences(const WebPreferences& other) = default;

@@ -15,6 +15,9 @@ enum GinEmbedder {
   kEmbedderNativeGin,
   kEmbedderBlink,
   kEmbedderPDFium,
+#if defined(USE_NEVA_NPAPI)
+  kEmbedderNPAPI,
+#endif  // USE_NEVA_NPAPI
   kEmbedderFuchsia,
 };
 

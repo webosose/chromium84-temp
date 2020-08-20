@@ -211,8 +211,12 @@ void HTMLObjectElement::ReloadPluginOnAttributeChange(
   // of what the element contains.
   bool needs_invalidation;
   if (name == html_names::kTypeAttr) {
+#if defined(USE_NEVA_NPAPI)
+    needs_invalidation = !FastHasAttribute(html_names::kClassidAttr);
+#else
     needs_invalidation = !FastHasAttribute(html_names::kClassidAttr) &&
                          !FastHasAttribute(html_names::kDataAttr);
+#endif  // USE_NEVA_NPAPI
   } else if (name == html_names::kDataAttr) {
     needs_invalidation = !FastHasAttribute(html_names::kClassidAttr);
   } else if (name == html_names::kClassidAttr) {

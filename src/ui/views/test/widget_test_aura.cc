@@ -13,7 +13,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+    !defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #endif
 
@@ -72,7 +73,8 @@ BOOL CALLBACK FindAllWindowsCallback(HWND hwnd, LPARAM param) {
 
 std::vector<aura::Window*> GetAllTopLevelWindows() {
   std::vector<aura::Window*> roots;
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+    !defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
   roots = DesktopWindowTreeHostLinux::GetAllOpenWindows();
 #elif defined(OS_WIN)
   {

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/events/ozone/evdev/event_device_info.h"
-
 #include <linux/input.h>
+#include <cstring>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"

@@ -813,7 +813,12 @@ void NGInlineNode::SegmentText(NGInlineNodeData* data) {
 
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
 void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+  DCHECK_EQ(data->segments.get(), nullptr);
+#else
   DCHECK_EQ(data->segments, nullptr);
+#endif
 
   String& text_content = data->text_content;
   if (text_content.IsEmpty()) {

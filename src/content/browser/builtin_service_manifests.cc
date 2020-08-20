@@ -12,11 +12,28 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 
+#if defined(USE_NEVA_APPRUNTIME)
+#include "neva/pal_service/neva_pal_manifest.h"
+#endif
+
+#if defined(USE_NEVA_MEDIA)
+#include "neva/neva_media_service/neva_media_manifest.h"
+#endif
+
 namespace content {
 
 const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{
-      std::vector<service_manager::Manifest>{GetContentBrowserManifest()}};
+    std::vector<service_manager::Manifest>{
+#if defined(USE_NEVA_APPRUNTIME)
+      pal::GetNevaPalManifest(),
+#endif
+#if defined(USE_NEVA_MEDIA)
+      neva_media::GetNevaMediaManifest(),
+#endif
+      GetContentBrowserManifest()
+    }
+  };
   return *manifests;
 }
 

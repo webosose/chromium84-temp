@@ -33,7 +33,12 @@ void SolidColorLayerImpl::AppendSolidQuads(
     SkColor color,
     bool force_anti_aliasing_off,
     SkBlendMode effect_blend_mode,
-    AppendQuadsData* append_quads_data) {
+    AppendQuadsData* append_quads_data
+#if defined(USE_NEVA_PUNCH_HOLE)
+    ,
+    bool force_draw_transparent_color
+#endif  // USE_NEVA_PUNCH_HOLE
+    ) {
   // Transparent, solid quads can be omitted if the effect blend mode is
   // kSrcOver. Note that |effect_blend_mode| may be different than
   // |shared_quad_state->blend_mode|, if the blend is applied by a render
@@ -47,16 +52,47 @@ void SolidColorLayerImpl::AppendSolidQuads(
     float alpha =
         (SkColorGetA(color) * (1.0f / 255.0f)) * shared_quad_state->opacity;
 
-    if (alpha < std::numeric_limits<float>::epsilon())
+    if (alpha < std::numeric_limits<float>::epsilon()
+#if defined(USE_NEVA_PUNCH_HOLE)
+        && !force_draw_transparent_color
+#endif  // USE_NEVA_PUNCH_HOLE
+        )
       return;
   }
 
   gfx::Rect visible_quad_rect =
       occlusion_in_layer_space.GetUnoccludedContentRect(visible_layer_rect);
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+#if defined(USE_NEVA_PUNCH_HOLE)
+      if (force_draw_transparent_color && SkColorGetA(color) == 0) {
+        quad->SetAll(shared_quad_state, visible_layer_rect,
+                     visible_quad_rect, false, color, true);
+        return;
+      }
+#endif  // USE_NEVA_PUNCH_HOLE
   quad->SetNew(shared_quad_state, visible_layer_rect, visible_quad_rect, color,
                force_anti_aliasing_off);
 }
+
+#if defined(USE_NEVA_PUNCH_HOLE)
+void SolidColorLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
+
+  SolidColorLayerImpl* layer_impl = static_cast<SolidColorLayerImpl*>(layer);
+  layer_impl->SetForceDrawTransparentColor(force_draw_transparent_color_);
+}
+
+void SolidColorLayerImpl::SetForceDrawTransparentColor(bool force_draw) {
+  if (force_draw_transparent_color_ == force_draw)
+    return;
+  force_draw_transparent_color_ = force_draw;
+  SetNeedsPushProperties();
+}
+
+bool SolidColorLayerImpl::IsForceDrawTransparentColor() const {
+  return force_draw_transparent_color_;
+}
+#endif  // USE_NEVA_PUNCH_HOLE
 
 void SolidColorLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                       AppendQuadsData* append_quads_data) {
@@ -73,7 +109,12 @@ void SolidColorLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   AppendSolidQuads(render_pass, draw_properties().occlusion_in_content_space,
                    shared_quad_state, gfx::Rect(bounds()), background_color(),
                    !layer_tree_impl()->settings().enable_edge_anti_aliasing,
-                   effect_node->blend_mode, append_quads_data);
+                   effect_node->blend_mode, append_quads_data
+#if defined(USE_NEVA_PUNCH_HOLE)
+                   ,
+                   force_draw_transparent_color_
+#endif  // USE_NEVA_PUNCH_HOLE
+                   );
 }
 
 const char* SolidColorLayerImpl::LayerTypeAsString() const {

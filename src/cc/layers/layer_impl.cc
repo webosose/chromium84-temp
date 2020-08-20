@@ -881,6 +881,12 @@ void LayerImpl::EnsureValidPropertyTreeIndices() const {
   DCHECK(GetScrollTree().Node(scroll_tree_index()));
 }
 
+#if defined(USE_NEVA_PUNCH_HOLE)
+bool LayerImpl::IsForceDrawTransparentColor() const {
+  return false;
+}
+#endif  // USE_NEVA_PUNCH_HOLE
+
 bool LayerImpl::is_surface_layer() const {
   return false;
 }

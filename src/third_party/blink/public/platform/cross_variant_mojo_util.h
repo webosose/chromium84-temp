@@ -128,7 +128,12 @@ class CrossVariantMojoAssociatedReceiver {
   ~CrossVariantMojoAssociatedReceiver() = default;
 
   CrossVariantMojoAssociatedReceiver(
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+      CrossVariantMojoAssociatedReceiver&&) = default;
+#else
       CrossVariantMojoAssociatedReceiver&&) noexcept = default;
+#endif
   CrossVariantMojoAssociatedReceiver& operator=(
       CrossVariantMojoAssociatedReceiver&&) noexcept = default;
 
@@ -161,7 +166,12 @@ class CrossVariantMojoAssociatedRemote {
   ~CrossVariantMojoAssociatedRemote() = default;
 
   CrossVariantMojoAssociatedRemote(
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+      CrossVariantMojoAssociatedRemote&&) = default;
+#else
       CrossVariantMojoAssociatedRemote&&) noexcept = default;
+#endif
   CrossVariantMojoAssociatedRemote& operator=(
       CrossVariantMojoAssociatedRemote&&) noexcept = default;
 

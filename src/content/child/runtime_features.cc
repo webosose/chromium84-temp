@@ -247,6 +247,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePictureInPicture, media::kPictureInPicture, kUseFeatureState},
     {wf::EnableCacheInlineScriptCode, features::kCacheInlineScriptCode,
      kUseFeatureState},
+#if defined(USE_FILESCHEME_CODECACHE)
+    {wf::EnableLocalResourceCodeCache,
+     blink::features::kLocalResourceCodeCache, kUseFeatureState},
+#endif
     {wf::EnableExperimentalProductivityFeatures,
      features::kExperimentalProductivityFeatures, kEnableOnly},
     {wf::EnableFeaturePolicyForSandbox, features::kFeaturePolicyForSandbox,

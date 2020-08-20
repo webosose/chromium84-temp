@@ -15,6 +15,7 @@
 #include "util/process/process_memory.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include "base/logging.h"
 #include "util/numeric/safe_assignment.h"

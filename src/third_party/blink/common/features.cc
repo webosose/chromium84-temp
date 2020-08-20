@@ -68,6 +68,12 @@ const base::Feature kTopLevelAwait{"TopLevelAwait",
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(USE_FILESCHEME_CODECACHE)
+// Enabled the code cache for local resources
+const base::Feature kLocalResourceCodeCache{"LocalResourceCodeCache",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 

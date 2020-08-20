@@ -518,6 +518,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
     return is_currently_scrolling_viewport_;
   }
 
+#if defined(USE_NEVA_APPRUNTIME)
+  void SetHardwareResolution(int width, int height);
+#endif
+
+#if defined(USE_NEVA_MEDIA)
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget();
+#endif  // defined(USE_NEVA_MEDIA)
+
   virtual void DidNavigate();
 
   // Called when the RenderWidgetHostImpl has be initialized.
@@ -629,6 +637,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   }
 
   gfx::Rect current_display_area_;
+
+#if defined(USE_NEVA_APPRUNTIME)
+   gfx::Size hardware_resolution_;
+#endif
 
   uint32_t renderer_frame_number_ = 0;
 

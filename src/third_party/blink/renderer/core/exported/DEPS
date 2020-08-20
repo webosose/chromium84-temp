@@ -3,4 +3,8 @@ include_rules = [
   # exported.
   "+third_party/blink/renderer/core/exported",
   "+third_party/blink/public/web",
+
+  # USE_NEVA_NPAPI dependencies.
+  "+neva/npapi",
+  "+ui/gfx",
 ]

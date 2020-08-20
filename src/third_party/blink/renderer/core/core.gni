@@ -6,6 +6,8 @@ import("//build/config/chrome_build.gni")
 import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/config.gni")
 
+import("//neva/neva.gni")
+
 blink_core_output_dir = "$root_gen_dir/third_party/blink/renderer/core"
 
 # This file sets core_config_add and core_config_remove lists of configs to
@@ -65,6 +67,10 @@ template("blink_core_sources") {
     deps = [ "//third_party/blink/renderer/core:prerequisites" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+
+    if (use_neva_npapi) {
+      deps += [ "//neva/npapi" ]
     }
 
     public_deps = [ "//third_party/blink/renderer/core:all_generators" ]

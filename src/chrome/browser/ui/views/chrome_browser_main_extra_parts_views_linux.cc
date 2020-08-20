@@ -11,6 +11,10 @@
 #include "ui/display/screen.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
+#if defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+#include "ozone/ui/webui/ozone_webui.h"
+#endif  // defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+
 #if BUILDFLAG(USE_GTK)
 #include "ui/gtk/gtk_ui.h"
 #include "ui/gtk/gtk_ui_delegate.h"
@@ -30,6 +34,9 @@ views::LinuxUI* BuildLinuxUI() {
 #if BUILDFLAG(USE_GTK)
   if (ui::GtkUiDelegate::instance())
     linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
+#endif
+#if defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  linux_ui = BuildWebUI();
 #endif
   return linux_ui;
 }

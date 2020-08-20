@@ -2067,6 +2067,14 @@ void WebContentsImpl::Observe(int type,
       }
       break;
     }
+#if defined(USE_NEVA_APPRUNTIME)
+    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      RenderProcessHost* process_host = Source<RenderProcessHost>(source).ptr();
+      if (process_host)
+        RenderProcessCreated(process_host);
+      break;
+    }
+#endif
     default:
       NOTREACHED();
   }
@@ -2125,6 +2133,12 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   registrar_.Add(this,
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllBrowserContextsAndSources());
+
+#if defined(USE_NEVA_APPRUNTIME)
+  registrar_.Add(this,
+                 NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 NotificationService::AllBrowserContextsAndSources());
+#endif
 
   screen_orientation_provider_.reset(new ScreenOrientationProvider(this));
 
@@ -4827,8 +4841,12 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHost* render_frame_host,
   GURL validated_url(url);
   render_frame_host->GetProcess()->FilterURL(false, &validated_url);
 
+  // TODO(neva): Changed the moment of observers notifying to avoid crash in
+  // webOS WAM client.
+#if !defined(USE_NEVA_APPRUNTIME)
   for (auto& observer : observers_)
     observer.DidFinishLoad(render_frame_host, validated_url);
+#endif
 
   size_t tree_size = frame_tree_.root()->GetFrameTreeSize();
   if (max_loaded_frame_count_ < tree_size)
@@ -4836,6 +4854,11 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHost* render_frame_host,
 
   if (!render_frame_host->GetParent())
     UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", tree_size);
+
+#if defined(USE_NEVA_APPRUNTIME)
+  for (auto& observer : observers_)
+    observer.DidFinishLoad(render_frame_host, validated_url);
+#endif
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
@@ -6268,6 +6291,12 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     // This is an outermost WebContents.
     SetAsFocusedWebContentsIfNecessary();
   }
+
+#if defined(USE_NEVA_APPRUNTIME)
+  // Added for neva app-runtime frame focused notification
+  if (delegate_)
+    delegate_->DidFrameFocused();
+#endif
 }
 
 void WebContentsImpl::DidCallFocus() {
@@ -7414,6 +7443,54 @@ void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
 void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
   GetMainFrame()->SetVisibilityForChildViews(visible);
 }
+
+#if defined(USE_NEVA_APPRUNTIME)
+bool WebContentsImpl::IsInspectablePage() const {
+  return inspectable_page_;
+}
+
+void WebContentsImpl::SetInspectablePage(bool inspectable) {
+  inspectable_page_ = inspectable;
+}
+
+void WebContentsImpl::RenderProcessCreated(
+    RenderProcessHost* render_process_host) {
+  for (auto& observer : observers_)
+    observer.RenderProcessCreated(render_process_host->GetProcess().Handle());
+}
+
+void WebContentsImpl::OverrideWebkitPrefs(WebPreferences* prefs) {
+  if (delegate_)
+    delegate_->OverrideWebkitPrefs(prefs);
+}
+
+bool WebContentsImpl::DecidePolicyForResponse(bool is_main_frame,
+                                              int status_code,
+                                              const std::string& url,
+                                              const std::string& status_text) {
+  if (!delegate_)
+    return false;
+  return delegate_->DecidePolicyForResponse(is_main_frame, status_code, url,
+                                            status_text);
+}
+
+void WebContentsImpl::DropAllPeerConnections(
+    blink::mojom::DropPeerConnectionReason reason) {
+  LOG(INFO) << "WebContentsImpl::DropAllPeerConnections()";
+  RenderProcessHostImpl* render_process_host =
+      static_cast<RenderProcessHostImpl*>(GetRenderViewHost()->GetProcess());
+  render_process_host->DropAllPeerConnections(
+      base::BindOnce(&WebContentsImpl::OnDidDropAllPeerConnections,
+                     base::Unretained(this), reason));
+}
+
+void WebContentsImpl::OnDidDropAllPeerConnections(
+    blink::mojom::DropPeerConnectionReason reason) {
+  LOG(INFO) << "WebContentsImpl::OnDidDropAllPeerConnections()";
+  for (auto& observer : observers_)
+    observer.DidDropAllPeerConnections(reason);
+}
+#endif  // defined(USE_NEVA_APPRUNTIME)
 
 void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK(native_theme_observer_.IsObserving(observed_theme));

@@ -1161,6 +1161,11 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // not possible.
   LayoutObject* GetLayoutObjectForNativeScrollAction() const;
 
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+  bool IsAnyOfGrid() const;
+#endif
+
   static unsigned number_of_live_ax_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObject);

@@ -1,0 +1,27 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+import("//neva/neva.gni")
+
+if (use_neva_npapi) {
+
+if (!is_webos) {
+  deps = [
+    "//neva/pc_impl/bin:bin_pc_impl"
+  ]
+}
+
+source_set("npapi") {
+  # Just headers but this allows us to track dependencies on these.
+  sources = [
+    "bindings/npapi.h",
+    "bindings/npapi_extensions.h",
+    "bindings/npapi_x11.h",
+    "bindings/npfunctions.h",
+    "bindings/nphostapi.h",
+    "bindings/npruntime.h",
+    "bindings/nptypes.h",
+  ]
+}
+
+}

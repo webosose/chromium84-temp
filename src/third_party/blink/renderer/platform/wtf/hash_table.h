@@ -673,7 +673,13 @@ struct HashTableHelper {
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }
   static bool IsEmptyOrDeletedBucketSafe(const Value& value) {
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+    constexpr size_t kAlignment = std::max(alignof(Key), sizeof(size_t));
+    alignas(kAlignment) char buf[sizeof(Key)];
+#else
     alignas(std::max(alignof(Key), sizeof(size_t))) char buf[sizeof(Key)];
+#endif
     const Key& key = Extractor::ExtractSafe(value, &buf);
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }

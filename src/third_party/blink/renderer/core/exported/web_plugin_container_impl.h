@@ -71,7 +71,11 @@ class CORE_EXPORT WebPluginContainerImpl final
     : public GarbageCollected<WebPluginContainerImpl>,
       public EmbeddedContentView,
       public WebPluginContainer,
+#if defined(USE_NEVA_NPAPI)
+      public ExecutionContextLifecycleObserver {
+#else
       public ExecutionContextClient {
+#endif  // USE_NEVA_NPAPI
   USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
   USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);
 
@@ -185,6 +189,13 @@ class CORE_EXPORT WebPluginContainerImpl final
   void DidReceiveData(const char* data, size_t data_length);
   void DidFinishLoading();
   void DidFailLoading(const ResourceError&);
+
+#if defined(USE_NEVA_NPAPI)
+  void AllowScriptObjects() override;
+  void ClearScriptObjects() override;
+  NPObject* GetScriptableObjectForElement() override;
+  void ContextDestroyed() override;
+#endif  // USE_NEVA_NPAPI
 
   void Trace(Visitor*) override;
   // USING_PRE_FINALIZER does not allow for virtual dispatch from the finalizer

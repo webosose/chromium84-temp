@@ -8,6 +8,7 @@ import("//build/config/chromeos/args.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//media/gpu/args.gni")
+import("//neva/neva.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libaom/options.gni")
 import("//third_party/libgav1/options.gni")
@@ -90,7 +91,7 @@ declare_args() {
   # are combined and we could override more logging than expected.
   enable_logging_override = !use_jumbo_build && is_chromecast
 
-  enable_dav1d_decoder = !is_android && !is_ios
+  enable_dav1d_decoder = !is_android && !is_ios && !is_webos
 
   # Enable browser managed persistent metadata storage for EME persistent
   # session and persistent usage record session.

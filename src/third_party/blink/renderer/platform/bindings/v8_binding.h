@@ -351,6 +351,25 @@ inline v8::Local<v8::String> V8AtomicString(v8::Isolate* isolate,
       .ToLocalChecked();
 }
 
+#if defined(USE_NEVA_NPAPI)
+inline v8::Local<v8::String> V8AtomicStringFromUtf8(v8::Isolate* isolate,
+                                                    const char* string,
+                                                    size_t len) {
+  DCHECK(isolate);
+  if (!string || string[0] == '\0')
+    return v8::String::Empty(isolate);
+  // Convert size_t to int which is needed in current design
+  // to avoid compile error regarding possible value overflow.
+  return v8::String::NewFromUtf8(isolate, string,
+                                 v8::NewStringType::kInternalized, static_cast<int>(len))
+      .ToLocalChecked();
+}
+
+inline v8::Local<v8::Boolean> V8Boolean(bool value, v8::Isolate* isolate) {
+  return value ? v8::True(isolate) : v8::False(isolate);
+}
+#endif  // USE_NEVA_NPAPI
+
 inline bool IsUndefinedOrNull(v8::Local<v8::Value> value) {
   return value.IsEmpty() || value->IsNullOrUndefined();
 }

@@ -60,6 +60,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockInputMethod : public InputMethod {
   void RemoveObserver(InputMethodObserver* observer) override;
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  LinuxInputMethodContext* GetInputMethodContext() override;
+  ///@}
+
  private:
   // InputMethod:
   const std::vector<std::unique_ptr<ui::KeyEvent>>& GetKeyEventsForTesting()

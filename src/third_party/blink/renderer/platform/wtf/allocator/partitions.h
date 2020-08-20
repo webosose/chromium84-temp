@@ -36,6 +36,10 @@
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
+#if defined(USE_MEMORY_TRACE)
+#include "base/allocator/partition_allocator/neva/partition_trace.h"
+#endif
+
 namespace base {
 class PartitionStatsDumper;
 struct PartitionRoot;
@@ -81,6 +85,10 @@ class WTF_EXPORT Partitions {
   static size_t TotalActiveBytes();
 
   static void DumpMemoryStats(bool is_light_dump, base::PartitionStatsDumper*);
+
+#if defined(USE_MEMORY_TRACE)
+  static void TraceMemoryStats(base::neva::PartitionStatsTracer*);
+#endif
 
   static void* BufferMalloc(size_t n, const char* type_name);
   static void* BufferTryRealloc(void* p, size_t n, const char* type_name);

@@ -246,7 +246,13 @@ struct VectorMover<true, T, Allocator> {
 
   static void SwapImpl(T* src, T* src_end, T* dst) {
     if (Allocator::kIsGarbageCollected) {
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+      constexpr size_t kAlignment = std::max(alignof(T), sizeof(size_t));
+      alignas(kAlignment) char buf[sizeof(T)];
+#else
       alignas(std::max(alignof(T), sizeof(size_t))) char buf[sizeof(T)];
+#endif
       for (; src < src_end; ++src, ++dst) {
         memcpy(buf, dst, sizeof(T));
         AtomicWriteMemcpy<sizeof(T)>(dst, src);
@@ -950,11 +956,10 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
     return unsafe_reinterpret_cast_ptr<const T*>(inline_buffer_);
   }
 
-  template <bool = Allocator::kIsGarbageCollected>
-  void InitInlinedBuffer() {}
-  template <>
-  void InitInlinedBuffer<true>() {
-    memset(&inline_buffer_, 0, kInlineBufferSize);
+  void InitInlinedBuffer() {
+    if (Allocator::kIsGarbageCollected) {
+      memset(&inline_buffer_, 0, kInlineBufferSize);
+    }
   }
 
   alignas(T) char inline_buffer_[kInlineBufferSize];

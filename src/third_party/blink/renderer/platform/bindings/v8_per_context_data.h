@@ -54,6 +54,12 @@ class V8DOMActivityLogger;
 class V8PerContextData;
 struct WrapperTypeInfo;
 
+#if defined(USE_NEVA_NPAPI)
+struct V8NPObject;
+typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
+typedef WTF::HashMap<int, V8NPObjectVector> V8NPObjectMap;
+#endif  // USE_NEVA_NPAPI
+
 // Used to hold data that is associated with a single v8::Context object, and
 // has a 1:1 relationship with v8::Context.
 class PLATFORM_EXPORT V8PerContextData final {
@@ -151,6 +157,13 @@ class PLATFORM_EXPORT V8PerContextData final {
 
   using DataMap = HeapHashMap<const char*, Member<Data>>;
   Persistent<DataMap> data_map_;
+
+#if defined(USE_NEVA_NPAPI)
+  V8NPObjectMap v8npobject_map_;
+
+ public:
+  V8NPObjectMap* GetV8NPObjectMap() { return &v8npobject_map_; }
+#endif  // USE_NEVA_NPAPI
 
   DISALLOW_COPY_AND_ASSIGN(V8PerContextData);
 };

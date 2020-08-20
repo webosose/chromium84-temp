@@ -185,6 +185,17 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Helper class for recording audible metrics.
   AudibleMetrics* audible_metrics_;
 
+#if defined(USE_NEVA_MEDIA)
+  // Neva meida state manager
+  void OnMediaActivated(RenderFrameHost* render_frame_host, int player_id);
+  void OnMediaActivationRequested(RenderFrameHost* render_frame_host,
+                                  int player_id);
+  void OnMediaCreated(RenderFrameHost* render_frame_host,
+                      int player_id,
+                      bool will_use_media_resource);
+  void OnMediaSuspended(RenderFrameHost* render_frame_host, int player_id);
+#endif
+
   // Tracking variables and associated wake locks for media playback.
   ActiveMediaPlayerMap active_audio_players_;
   ActiveMediaPlayerMap active_video_players_;

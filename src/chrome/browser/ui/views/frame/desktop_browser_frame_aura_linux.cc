@@ -69,7 +69,10 @@ bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
 }
 
 void DesktopBrowserFrameAuraLinux::TabDraggingStatusChanged(bool is_dragging) {
+// Disabled for external ozone wayland port
+#if !(defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL))
   host_->TabDraggingStatusChanged(is_dragging);
+#endif  // !(defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL))
 }
 
 void DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged() {

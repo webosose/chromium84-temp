@@ -49,6 +49,12 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
+#if defined(USE_NEVA_MEDIA)
+#include "third_party/blink/renderer/core/html/media/neva/html_media_element.h"
+#else
+#include "third_party/blink/renderer/core/html/media/neva/html_media_element_stub.h"
+#endif
+
 namespace cc {
 class Layer;
 }
@@ -86,7 +92,15 @@ class CORE_EXPORT HTMLMediaElement
       public Supplementable<HTMLMediaElement>,
       public ActiveScriptWrappable<HTMLMediaElement>,
       public ExecutionContextLifecycleStateObserver,
+      ///@name USE_NEVA_MEDIA
+      ///@{
+      public neva::HTMLMediaElement<HTMLMediaElement>,
+      ///@}
+#if defined(USE_NEVA_MEDIA)
+      private neva::HTMLMediaElementExtendingWebMediaPlayerClient<HTMLMediaElement> {
+#else
       private WebMediaPlayerClient {
+#endif
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
@@ -367,6 +381,18 @@ class CORE_EXPORT HTMLMediaElement
   virtual void OnWebMediaPlayerCreated() {}
 
  private:
+  ///@name USE_NEVA_MEDIA
+  ///@{
+  template <typename>
+  friend class neva::HTMLMediaElement;
+  ///@}
+#if defined(USE_NEVA_MEDIA)
+  using neva::HTMLMediaElement<HTMLMediaElement>::ScheduleEvent;
+
+  template <typename>
+  friend class neva::HTMLMediaElementExtendingWebMediaPlayerClient;
+#endif
+
   // Friend class for testing.
   friend class ContextMenuControllerTest;
   friend class VideoWakeLockTest;

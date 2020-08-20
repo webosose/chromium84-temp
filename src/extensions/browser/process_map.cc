@@ -110,6 +110,9 @@ Feature::Context ProcessMap::GetMostLikelyContextType(
     const Extension* extension,
     int process_id,
     const GURL* url) const {
+#if defined(USE_NEVA_EXTENSIONS)
+  return Feature::BLESSED_EXTENSION_CONTEXT;
+#else
   // WARNING: This logic must match ScriptContextSet::ClassifyJavaScriptContext,
   // as much as possible.
 
@@ -146,6 +149,7 @@ Feature::Context ProcessMap::GetMostLikelyContextType(
 
   return is_lock_screen_context_ ? Feature::LOCK_SCREEN_EXTENSION_CONTEXT
                                  : Feature::BLESSED_EXTENSION_CONTEXT;
+#endif
 }
 
 }  // namespace extensions

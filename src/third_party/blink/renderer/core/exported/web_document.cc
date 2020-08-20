@@ -88,6 +88,13 @@ WebSecurityOrigin WebDocument::GetSecurityOrigin() const {
   return WebSecurityOrigin(ConstUnwrap<Document>()->GetSecurityOrigin());
 }
 
+#if defined(USE_NEVA_APPRUNTIME)
+void WebDocument::GrantLoadLocalResources() {
+  if (Document* document = Unwrap<Document>())
+    document->GetMutableSecurityOrigin()->GrantLoadLocalResources();
+}
+#endif
+
 bool WebDocument::IsSecureContext() const {
   const Document* document = ConstUnwrap<Document>();
   return document && document->IsSecureContext();

@@ -315,6 +315,10 @@ source_set("common") {
     "//content/public/common:interfaces",
   ]
 
+  if (use_lttng) {
+    deps += [ "//content/common/neva/lttng:lttng" ]
+  }
+
   if (is_android && use_seccomp_bpf) {
     set_sources_assignment_filter([])
     sources += [
@@ -778,6 +782,12 @@ mojom("mojo_bindings") {
         traits_private_headers = [ "//content/common/view_messages.h" ]
         traits_public_deps = [ "//third_party/blink/public:blink_headers" ]
       },
+    ]
+  }
+
+  if (use_neva_media) {
+    sources += [
+      "media/neva/frame_media_controller.mojom",
     ]
   }
 

@@ -51,6 +51,17 @@ class WaylandSurface : public WaylandWindow,
   PlatformWindowState GetPlatformWindowState() const override;
   void SizeConstraintsChanged() override;
 
+///@name USE_NEVA_APPRUNTIME
+///@{
+  void SetKeyMask(KeyMask key_mask, bool set) override;
+  void SetInputRegion(const std::vector<gfx::Rect>& region) override;
+  void SetWindowProperty(const std::string& name,
+                         const std::string& value) override;
+
+  void HandleStateChanged(PlatformWindowState state) override;
+  void HandleActivationChanged(bool is_activated) override;
+///@}
+
  private:
   // WaylandWindow overrides:
   void HandleSurfaceConfigure(int32_t widht,

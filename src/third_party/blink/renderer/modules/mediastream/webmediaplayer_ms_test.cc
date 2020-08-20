@@ -116,6 +116,14 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
+
+#if defined(USE_NEVA_MEDIA)
+  MOCK_METHOD2(DidMediaCreated, void(int, bool));
+  MOCK_METHOD1(DidMediaActivated, void(int));
+  MOCK_METHOD1(DidMediaActivationNeeded, void(int));
+  MOCK_METHOD1(DidMediaSuspended, void(int));
+#endif
+
   void DidPause(int delegate_id) override {
     EXPECT_EQ(delegate_id_, delegate_id);
     EXPECT_TRUE(playing_);
@@ -627,6 +635,12 @@ class WebMediaPlayerMSTest
     player_->SetGpuMemoryBufferVideoForTesting(
         new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
   }
+
+#if defined(USE_NEVA_MEDIA)
+  MOCK_METHOD2(SendCustomMessage,
+               void(const blink::WebMediaPlayer::MediaEventType,
+                    const blink::WebString&));
+#endif
 
  protected:
   MOCK_METHOD0(DoStartRendering, void());

@@ -1,0 +1,12 @@
+import("//neva/neva.gni")
+
+if (use_neva_npapi) {
+  # This library is a LGE NPAPI Device plugin for PC/Linux platform
+  # It's used only to test neva npapi implementation in wam_demo for PC/Linux
+  plugin_bin = "libDevicePlugin.so"
+
+  copy("bin_pc_impl") {
+    sources = [plugin_bin]
+    outputs = ["$root_out_dir/$plugin_bin"]
+  }
+}

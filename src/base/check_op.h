@@ -157,7 +157,26 @@ class CheckOpResult {
 
 #endif
 
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
 // The int-int overload avoids address-taking static int members.
+#define DEFINE_CHECK_OP_IMPL(name, op)                                        \
+  template <typename T, typename U>                                           \
+  inline ::logging::CheckOpResult Check##name##Impl(const T& v1, const U& v2, \
+                                                    const char* expr_str) {   \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                       \
+      return ::logging::CheckOpResult();                                      \
+    return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),            \
+                                    CheckOpValueStr(v2));                     \
+  }                                                                           \
+  inline ::logging::CheckOpResult Check##name##Impl(int v1, int v2,           \
+                                                    const char* expr_str) {   \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                       \
+      return ::logging::CheckOpResult();                                      \
+    return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),            \
+                                    CheckOpValueStr(v2));                     \
+  }
+#else
 #define DEFINE_CHECK_OP_IMPL(name, op)                                         \
   template <typename T, typename U>                                            \
   constexpr ::logging::CheckOpResult Check##name##Impl(                        \
@@ -174,6 +193,7 @@ class CheckOpResult {
     return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),             \
                                     CheckOpValueStr(v2));                      \
   }
+#endif
 
 // clang-format off
 DEFINE_CHECK_OP_IMPL(EQ, ==)

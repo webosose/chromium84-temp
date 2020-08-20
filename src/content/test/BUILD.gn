@@ -20,6 +20,7 @@ import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//v8/gni/v8.gni")
+import("//neva/neva.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
@@ -595,6 +596,16 @@ jumbo_static_library("test_support") {
     sources += [
       "../public/test/xr_test_utils.cc",
       "../public/test/xr_test_utils.h",
+    ]
+  }
+
+  # TODO(neva): This is a workaround added in v.79 to avoid build failures for
+  # unnecessary for webOS tests.
+  if (is_webos) {
+    sources = [ ]
+    sources += [
+      "mock_background_sync_controller.cc",
+      "mock_background_sync_controller.h",
     ]
   }
 }

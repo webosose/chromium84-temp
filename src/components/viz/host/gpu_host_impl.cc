@@ -301,6 +301,21 @@ void GpuHostImpl::InitOzone() {
   // The Ozone/Wayland requires mojo communication to be established to be
   // functional with a separate gpu process. Thus, using the PlatformProperties,
   // check if there is such a requirement.
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  auto send_callback = base::BindRepeating(
+      [](base::WeakPtr<GpuHostImpl> host, IPC::Message* message) {
+        if (host)
+          host->delegate_->SendGpuProcessMessage(message);
+        else
+          delete message;
+      },
+      weak_ptr_factory_.GetWeakPtr());
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnGpuProcessLaunched(params_.restart_id,
+                             params_.main_thread_task_runner,
+                             host_thread_task_runner_, send_callback);
+#else
   auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
                                               weak_ptr_factory_.GetWeakPtr());
   auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
@@ -312,6 +327,7 @@ void GpuHostImpl::InitOzone() {
                              params_.main_thread_task_runner,
                              host_thread_task_runner_, interface_binder,
                              std::move(terminate_callback));
+#endif
 }
 
 void GpuHostImpl::TerminateGpuProcess(const std::string& message) {

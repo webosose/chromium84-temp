@@ -280,7 +280,6 @@ class CORE_EXPORT HTMLInputElement
   unsigned width() const;
   void setHeight(unsigned);
   void setWidth(unsigned);
-
   void blur() final;
   void DefaultBlur();
 

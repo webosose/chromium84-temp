@@ -403,6 +403,9 @@ class CC_EXPORT LayerImpl {
 
   void EnsureValidPropertyTreeIndices() const;
 
+#if defined(USE_NEVA_PUNCH_HOLE)
+  virtual bool IsForceDrawTransparentColor() const;
+#endif  // USE_NEVA_PUNCH_HOLE
   // TODO(sunxd): Remove this function and replace it with visitor pattern.
   virtual bool is_surface_layer() const;
 

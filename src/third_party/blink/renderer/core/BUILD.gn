@@ -18,6 +18,11 @@ import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+import("//neva/neva.gni")
+if (use_neva_npapi) {
+  import("//third_party/blink/renderer/bindings/core/npapi/npapi.gni")
+}
+
 visibility = [
   "//third_party/blink/renderer/*",
   "//third_party/blink/public/*",
@@ -223,6 +228,10 @@ component("core") {
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
   ]
+
+  if (use_neva_npapi) {
+    sources += bindings_core_npapi_files
+  }
 
   public_configs = [ ":core_include_dirs" ]
 

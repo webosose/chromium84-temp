@@ -26,6 +26,7 @@
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/npapi/npruntime_priv.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -60,6 +61,11 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
+
+#if defined(USE_NEVA_NPAPI)
+#include "third_party/blink/renderer/bindings/core/npapi/npruntime_impl.h"
+#include "third_party/blink/renderer/core/exported/legacy_web_plugin_list.h"
+#endif  // USE_NEVA_NPAPI
 
 namespace blink {
 
@@ -138,6 +144,13 @@ HTMLPlugInElement::HTMLPlugInElement(
 HTMLPlugInElement::~HTMLPlugInElement() {
   DCHECK(plugin_wrapper_.IsEmpty());  // cleared in detachLayoutTree()
   DCHECK(!is_delaying_load_event_);
+#if defined(USE_NEVA_NPAPI)
+  if (npObject_) {
+    _NPN_UnregisterObject(npObject_);
+    _NPN_ReleaseObject(npObject_);
+    npObject_ = nullptr;
+  }
+#endif  // USE_NEVA_NPAPI
 }
 
 void HTMLPlugInElement::Trace(Visitor* visitor) {
@@ -328,6 +341,14 @@ void HTMLPlugInElement::DetachLayoutTree(bool performing_reattach) {
   RemovePluginFromFrameView(plugin);
   ResetInstance();
 
+#if defined(USE_NEVA_NPAPI)
+  if (npObject_) {
+    _NPN_UnregisterObject(npObject_);
+    _NPN_ReleaseObject(npObject_);
+    npObject_ = nullptr;
+  }
+#endif  // USE_NEVA_NPAPI
+
   HTMLFrameOwnerElement::DetachLayoutTree(performing_reattach);
 }
 
@@ -377,7 +398,11 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
       plugin = PluginEmbeddedContentView();
 
     if (plugin) {
+#if defined(USE_NEVA_NPAPI)
+      plugin_wrapper_.Reset(isolate, frame->GetScriptController().CreatePluginWrapper(plugin));
+#else
       plugin_wrapper_.Reset(isolate, plugin->ScriptableObject(isolate));
+#endif
     } else {
       // This step is intended for plugins with external handlers. This should
       // checked after after calling PluginEmbeddedContentView(). Note that
@@ -535,6 +560,11 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
     return ObjectContentType::kExternalPlugin;
   }
 
+#if defined(USE_NEVA_NPAPI)
+  plugin_supports_mime_type |=
+      LegacyWebPluginList::GetInstance()->IsSupportedMimeType(mime_type);
+#endif  // USE_NEVA_NPAPI
+
   if (MIMETypeRegistry::IsSupportedImageMIMEType(mime_type)) {
     return should_prefer_plug_ins_for_images_ && plugin_supports_mime_type
                ? ObjectContentType::kPlugin
@@ -626,6 +656,13 @@ bool HTMLPlugInElement::RequestObject(const PluginParameters& plugin_params) {
   // it be handled as a plugin to show the broken plugin icon.
   bool use_fallback =
       object_type == ObjectContentType::kNone && HasFallbackContent();
+
+#if defined(USE_NEVA_NPAPI)
+  if (ContentFrame()) {
+    ContentFrame()->Detach(FrameDetachType::kRemove);
+  }
+#endif  // USE_NEVA_NPAPI
+
   return LoadPlugin(completed_url, service_type_, plugin_params, use_fallback);
 }
 
@@ -796,6 +833,28 @@ void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {
     service_type_ = MimeTypeFromDataURL(url_);
   }
 }
+
+#if defined(USE_NEVA_NPAPI)
+NPObject* HTMLPlugInElement::GetNPObject() {
+  LocalFrame* frame = GetDocument().GetFrame();
+  assert(frame);
+  if (!npObject_)
+    npObject_ =
+        frame->GetScriptController().CreateScriptObjectForPluginElement(this);
+  return npObject_;
+}
+
+void HTMLPlugInElement::SetPluginFocus(bool focused) {
+  // NPAPI flash requires to receive messages when web contents focus changes.
+  // if (getNPObject() && OwnedPlugin() && OwnedPlugin()->IsPluginView())
+  // toPluginView(OwnedPlugin())->setFocus(focused, kWebFocusTypeNone);
+
+  // TODO(NPAPI): check this
+  WebPluginContainerImpl* plugin = OwnedPlugin();
+  if (plugin)
+    plugin->SetFocused(focused, mojom::blink::FocusType::kNone);
+}
+#endif  // USE_NEVA_NPAPI
 
 scoped_refptr<ComputedStyle> HTMLPlugInElement::CustomStyleForLayoutObject() {
   scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();

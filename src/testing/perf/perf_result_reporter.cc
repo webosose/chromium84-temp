@@ -10,9 +10,16 @@
 
 namespace {
 
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+  const std::vector<std::string> entries{"/", ":", "="};
+  static const base::NoDestructor<std::vector<std::string>> kInvalidCharacters(
+    entries);
+#else
 // These characters mess with either the stdout parsing or the dashboard itself.
 static const base::NoDestructor<std::vector<std::string>> kInvalidCharacters(
     {"/", ":", "="});
+#endif
 
 void CheckForInvalidCharacters(const std::string& str) {
   for (const auto& invalid : *kInvalidCharacters) {

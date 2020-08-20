@@ -17,6 +17,7 @@ import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
 import("//v8/gni/v8.gni")
+import("//neva/neva.gni")
 
 # Most targets in this file are private actions so use that as the default.
 visibility = [
@@ -1658,6 +1659,17 @@ jumbo_component("platform") {
       "text/hyphenation/hyphenator_aosp.cc",
       "text/hyphenation/hyphenator_aosp.h",
     ]
+  }
+
+  if (use_neva_npapi) {
+    # TODO(neva): dom_wrapper_map.h is removed in upstream
+    sources += [
+      "bindings/dom_wrapper_map.h",
+    ]
+  }
+
+  if (use_memory_trace) {
+    deps += [ "//third_party/blink/renderer/platform/neva" ]
   }
 
   if (enable_av1_decoder) {

@@ -742,7 +742,12 @@ bool WebPluginContainerImpl::WantsWheelEvents() const {
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
                                                WebPlugin* web_plugin)
     : EmbeddedContentView(IntRect()),
+#if defined(USE_NEVA_NPAPI)
+      ExecutionContextLifecycleObserver(
+          element.GetDocument().GetExecutionContext()),
+#else
       ExecutionContextClient(element.GetDocument().GetFrame()),
+#endif  // USE_NEVA_NPAPI
       element_(element),
       web_plugin_(web_plugin),
       layer_(nullptr),
@@ -779,6 +784,9 @@ void WebPluginContainerImpl::Dispose() {
 
   if (web_plugin_) {
     CHECK(web_plugin_->Container() == this);
+#if defined(USE_NEVA_NPAPI)
+    ClearScriptObjects();
+#endif  // USE_NEVA_NPAPI
     web_plugin_->Destroy();
     web_plugin_ = nullptr;
   }
@@ -797,7 +805,11 @@ void WebPluginContainerImpl::SetFrameRect(const IntRect& rect) {
 
 void WebPluginContainerImpl::Trace(Visitor* visitor) {
   visitor->Trace(element_);
+#if defined(USE_NEVA_NPAPI)
+  ContextLifecycleObserver::Trace(visitor);
+#else
   ExecutionContextClient::Trace(visitor);
+#endif  // USE_NEVA_NPAPI
 }
 
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
@@ -1130,5 +1142,27 @@ void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
                               unobscured_rect);
   }
 }
+
+#if defined(USE_NEVA_NPAPI)
+void WebPluginContainerImpl::AllowScriptObjects() {}
+
+void WebPluginContainerImpl::ClearScriptObjects() {
+  if (!element_->GetDocument().GetFrame())
+    return;
+
+  element_->GetDocument()
+      .GetFrame()
+      ->GetScriptController()
+      .CleanupScriptObjectsForPlugin(this);
+}
+
+NPObject* WebPluginContainerImpl::GetScriptableObjectForElement() {
+  return element_->GetNPObject();
+}
+
+void WebPluginContainerImpl::ContextDestroyed() {
+  ClearScriptObjects();
+}
+#endif  // USE_NEVA_NPAPI
 
 }  // namespace blink

@@ -1,0 +1,22 @@
+# Copyright 2020 LG Electronics, Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("webosgavplugin_injection") {
+
+  sources = [
+    "webosgavplugin_injection.cc",
+    "webosgavplugin_injection.h",
+  ]
+
+  deps = [
+    "//gin",
+    "//third_party/blink/public:blink",
+    "//v8",
+  ]
+
+  configs += [
+    "//neva/injection/config:injection_config",
+  ]
+}
+

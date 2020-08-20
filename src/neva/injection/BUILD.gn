@@ -1,0 +1,138 @@
+# Copyright 2016-2019 LG Electronics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+import("//neva/neva.gni")
+import("//tools/grit/repack.gni")
+
+if (enable_sample_webapi) {
+  import("sample/sample.gni")
+}
+
+if (enable_browser_control_webapi) {
+  import("browser_control/browser_control.gni")
+}
+
+if (enable_memorymanager_webapi) {
+  import("memorymanager/memorymanager.gni")
+}
+
+config("luna") {
+  libs = []
+  if (is_webos) {
+    libs += ["luna-service2"]
+  }
+}
+
+source_set("injection") {
+  deps = [
+    "//base",
+    "//neva/app_runtime/public/mojom",
+    "//neva/pal_service",
+    "//neva/pal_service/public/mojom",
+    "//third_party/blink/public:blink",
+    "//v8",
+  ]
+
+  sources = [
+    "common/gin/function_template_neva.h",
+    "common/public/renderer/injection_base.cc",
+    "common/public/renderer/injection_base.h",
+    "common/public/renderer/injection_browser_control_base.cc",
+    "common/public/renderer/injection_browser_control_base.h",
+    "common/public/renderer/injection_data_manager.cc",
+    "common/public/renderer/injection_data_manager.h",
+    "common/public/renderer/injection_install.cc",
+    "common/public/renderer/injection_install.h",
+  ]
+
+  if (enable_sample_webapi) {
+    sources += sample_sources
+  }
+
+  if (enable_browser_control_webapi) {
+    sources += browser_control_sources
+  }
+
+  if (enable_network_error_page_controller_webapi) {
+    deps += [
+      "//neva/injection/network_error_page:network_error_page_controller_injection",
+    ]
+  }
+
+  if (is_webos) {
+    deps += [
+      "//neva/injection/netcast:netcast_injection",
+      "//neva/injection/webosservicebridge:webosservicebridge_injection",
+      "//neva/injection/webossystem:webossystem_injection",
+    ]
+
+    if (use_gav) {
+      deps += [ "//neva/injection/webosgavplugin:webosgavplugin_injection" ]
+    }
+
+    if (enable_memorymanager_webapi) {
+      sources += memorymanager_sources
+    }
+
+    sources += [
+      "common/public/renderer/injection_webos.cc",
+      "common/public/renderer/injection_webos.h",
+      "common/webos/pmtracer.h",
+      "common/webos/pmtrace_bundle_provider.h",
+    ]
+
+    configs += [
+      ":luna",
+      "//neva/injection/config:injection_config",
+    ]
+  }
+
+  # FIXME(neva): Temporary workaround to fix build issues on Chromium v.84
+  # with Neva Media enabled.
+  # Need to revise dependency on //content from //neva/injection.
+  if (use_neva_media) {
+    deps += [ "//ui/platform_window:mojom" ]
+  }
+}
+
+grit("injection_resources_grit") {
+  visibility = [ ":*" ]
+  source = "//neva/injection/resources/injection_resources.grd"
+  outputs = [
+    "grit/injection_resources.h",
+    "injection_resources.pak",
+  ]
+}
+
+copy("copy_injection_resources") {
+  sources = [
+    "$target_gen_dir/injection_resources.pak",
+    "$target_gen_dir/injection_resources.pak.info",
+  ]
+  outputs = [
+    "$root_gen_dir/injection/public/resources/{{source_file_part}}",
+  ]
+
+  public_deps = [
+    ":injection_resources_grit",
+  ]
+}
+
+group("resources") {
+  public_deps = [
+    ":copy_injection_resources",
+  ]
+}

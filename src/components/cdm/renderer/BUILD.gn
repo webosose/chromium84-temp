@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//neva/neva.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
 jumbo_static_library("renderer") {
@@ -32,5 +33,9 @@ jumbo_static_library("renderer") {
       "widevine_key_system_properties.h",
     ]
     deps += [ "//third_party/widevine/cdm:headers" ]
+  }
+
+  if (use_neva_media) {
+    deps += [ "//components/cdm/renderer/neva" ]
   }
 }

@@ -18,6 +18,11 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
+#if defined(USE_NEVA_MEDIA)
+#include "ui/platform_window/neva/video_window_controller.h"
+#include "ui/platform_window/neva/video_window_controller_host.h"
+#endif
+
 namespace display {
 class NativeDisplayDelegate;
 }
@@ -26,6 +31,9 @@ namespace ui {
 
 class CursorFactoryOzone;
 class InputController;
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+class GpuPlatformSupport;
+#endif
 class GpuPlatformSupportHost;
 class OverlayManagerOzone;
 class PlatformScreen;
@@ -131,6 +139,9 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual ui::OverlayManagerOzone* GetOverlayManager() = 0;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
   virtual ui::InputController* GetInputController() = 0;
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  virtual ui::GpuPlatformSupport* GetGpuPlatformSupport();
+#endif
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
   virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
   virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
@@ -181,6 +192,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // implementations to ignore sandboxing and any associated launch ordering
   // issues.
   virtual void AfterSandboxEntry();
+
+#if defined(USE_NEVA_MEDIA)
+  virtual ui::VideoWindowController* GetVideoWindowController();
+#endif
 
  protected:
   bool has_initialized_ui() const { return initialized_ui_; }

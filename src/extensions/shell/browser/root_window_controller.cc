@@ -17,6 +17,20 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
+// neva include
+#include "components/guest_view/browser/guest_view_base.h"
+#include "content/common/renderer.mojom.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+
+#if defined(USE_NEVA_MEDIA)
+#include "content/public/browser/neva/media_state_manager.h"
+#endif
+
 namespace extensions {
 
 namespace {
@@ -112,7 +126,6 @@ RootWindowController::RootWindowController(
 
   // Ensure the window fills the display.
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
-
   host_->AddObserver(this);
   host_->Show();
 }
@@ -174,6 +187,64 @@ void RootWindowController::OnHostCloseRequested(aura::WindowTreeHost* host) {
   // The ShellDesktopControllerAura will delete us.
   desktop_delegate_->CloseRootWindowController(this);
 }
+
+///@name USE_NEVA_APPRUNTIME
+///@{
+void RootWindowController::OnWindowHostStateChanged(aura::WindowTreeHost* host,
+                                                    ui::WidgetState new_state) {
+  if (app_windows_.empty())
+    return;
+
+  if (new_state == ui::WidgetState::MINIMIZED ||
+      new_state == ui::WidgetState::MAXIMIZED ||
+      new_state == ui::WidgetState::FULLSCREEN) {
+    for (AppWindow* app_window : app_windows_) {
+      content::WebContents* web_contents = app_window->web_contents();
+      if (web_contents == nullptr)
+        continue;
+      content::BrowserContext* browser_context =
+          web_contents->GetBrowserContext();
+      if (browser_context == nullptr ||
+          browser_context->GetGuestManager() == nullptr)
+        continue;
+      browser_context->GetGuestManager()->ForEachGuest(
+          web_contents,
+          base::Bind(
+              [](ui::WidgetState new_state,
+                 content::WebContents* guest_contents) {
+                WebViewGuest* guest_view =
+                    guest_view::GuestViewBase::FromWebContents(guest_contents)
+                        ->As<WebViewGuest>();
+                // Suspend or resume only for non-suspended WebViewGuest
+                // Embeder will take care of suspended WebViewGuest
+                if (guest_view != nullptr && !guest_view->IsSuspended()) {
+#if defined(USE_NEVA_MEDIA)
+                  if (new_state == ui::WidgetState::MINIMIZED)
+                    content::MediaStateManager::GetInstance()->SuspendAllMedia(
+                        guest_contents);
+                  else if (new_state == ui::WidgetState::MAXIMIZED ||
+                           new_state == ui::WidgetState::FULLSCREEN) {
+                    content::MediaStateManager::GetInstance()->ResumeAllMedia(
+                        guest_contents);
+                  }
+#endif  // USE_NEVA_MEDIA
+                  content::RenderProcessHost* host =
+                      guest_view->web_contents()->GetMainFrame()->GetProcess();
+                  if (host) {
+                    if (new_state == ui::WidgetState::MINIMIZED)
+                      host->GetRendererInterface()->ProcessSuspend();
+                    else if (new_state == ui::WidgetState::MAXIMIZED ||
+                             new_state == ui::WidgetState::FULLSCREEN)
+                      host->GetRendererInterface()->ProcessResume();
+                  }
+                }
+                return false;
+              },
+              new_state));
+    }
+  }
+}
+///@}
 
 void RootWindowController::OnAppWindowRemoved(AppWindow* window) {
   if (app_windows_.empty())

@@ -30,6 +30,10 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "v8/include/v8.h"
 
+#if defined(USE_NEVA_NPAPI)
+struct NPObject;
+#endif  // USE_NEVA_NPAPI
+
 namespace blink {
 
 class HTMLImageLoader;
@@ -229,6 +233,15 @@ class CORE_EXPORT HTMLPlugInElement
   // off embedded_content_view_ here while the plugin is persisting but not
   // being displayed.
   Member<WebPluginContainerImpl> persisted_plugin_;
+
+#if defined(USE_NEVA_NPAPI)
+  NPObject* npObject_ = nullptr;
+
+ public:
+  NPObject* GetNPObject();
+  void SetPluginFocus(bool focused);
+ private:
+#endif  // USE_NEVA_NPAPI
 
   // True when the element has changed in such a way (new URL, for instance)
   // that we cannot re-use the old view when re-attaching.

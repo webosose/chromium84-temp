@@ -958,6 +958,9 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetIsSignedExchangeInnerResponse(
       head.is_signed_exchange_inner_response);
   response->SetWasInPrefetchCache(head.was_in_prefetch_cache);
+#if defined(USE_FILESCHEME_CODECACHE)
+  response->SetFileLastModifiedTime(head.file_last_modified_time);
+#endif
   response->SetRecursivePrefetchToken(head.recursive_prefetch_token);
 
   SetSecurityStyleAndDetails(url, head, response, report_security_info);

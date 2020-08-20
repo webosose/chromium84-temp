@@ -29,6 +29,9 @@
 #include <sys/sysctl.h>
 #elif defined(OS_SOLARIS) || defined(OS_AIX)
 #include <stdlib.h>
+#elif defined(OS_LINUX) && defined(USE_CBE)
+#include <dlfcn.h>
+#include <link.h>
 #endif
 
 namespace base {
@@ -38,6 +41,18 @@ bool PathProviderPosix(int key, FilePath* result) {
     case FILE_EXE:
     case FILE_MODULE: {  // TODO(evanm): is this correct?
 #if defined(OS_LINUX)
+#if defined(USE_CBE)
+      if (FILE_MODULE == key) {
+        Dl_info info;
+        link_map* extra_info = nullptr;
+        if (dladdr1((void*)PathService::Get, &info, (void**)&extra_info,
+                    RTLD_DL_LINKMAP) != 0 &&
+            extra_info->l_name && extra_info->l_name[0]) {
+          *result = base::FilePath(extra_info->l_name);
+          return true;
+        }
+      }
+#endif  // defined(USE_CBE)
       FilePath bin_dir;
       if (!ReadSymbolicLink(FilePath(kProcSelfExe), &bin_dir)) {
         NOTREACHED() << "Unable to resolve " << kProcSelfExe << ".";
@@ -112,6 +127,18 @@ bool PathProviderPosix(int key, FilePath* result) {
       *result = cache_dir;
       return true;
     }
+#if defined(USE_CBE)
+    case DIR_ASSETS: {
+      FilePath path;
+      if (!PathService::Get(DIR_MODULE, &path))
+        return false;
+      path = path.Append(FILE_PATH_LITERAL("cbe"));
+      if (!PathExists(path))
+        return false;
+      *result = path;
+      return true;
+    }
+#endif  // defined(USE_CBE)
   }
   return false;
 }

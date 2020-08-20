@@ -298,7 +298,11 @@ namespace content {
 
 namespace {
 
+#if defined(OS_WEBOS)
+const int kExtraCharsBeforeAndAfterSelection = 500;
+#else
 const int kExtraCharsBeforeAndAfterSelection = 100;
+#endif
 const size_t kMaxURLLogChars = 1024;
 
 const PreviewsState kDisabledPreviewsBits =
@@ -1808,6 +1812,9 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
           base::BindRepeating(&RenderFrameImpl::RequestOverlayRoutingToken,
                               base::Unretained(this))),
       input_target_client_impl_(this),
+#if defined(USE_NEVA_MEDIA)
+      frame_media_controller_impl_(this),
+#endif
       devtools_frame_token_(params.devtools_frame_token) {
   DCHECK(RenderThread::IsMainThread());
   // The InterfaceProvider to access Mojo services exposed by the RFHI must be
@@ -4319,6 +4326,11 @@ void RenderFrameImpl::DidClearWindowObject() {
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame_);
 
+#if defined(USE_NEVA_APPRUNTIME)
+  for (auto& observer : render_view_->observers())
+    observer.DidClearWindowObject(frame_);
+#endif
+
   for (auto& observer : observers_)
     observer.DidClearWindowObject();
 }
@@ -4486,6 +4498,26 @@ void RenderFrameImpl::AbortClientNavigation() {
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
+#if defined(USE_NEVA_APPRUNTIME)
+  if (is_empty_selection &&
+      !GetLocalRootRenderWidget()->input_handler().handling_input_event() &&
+      !GetLocalRootRenderWidget()->has_ime_event_guard()) {
+    WebRange selection =
+        frame_->GetInputMethodController()->GetSelectionOffsets();
+    if (selection.IsNull())
+      return;
+
+    gfx::Range range =
+        gfx::Range(selection.StartOffset(), selection.EndOffset());
+    base::string16 text =
+        frame_
+        ->RangeAsText(WebRange(0, kExtraCharsBeforeAndAfterSelection + 1))
+        .Utf16();
+
+    SetSelectedText(text, 0, range);
+  }
+#endif
+
   if (!GetLocalRootRenderWidget()->input_handler().handling_input_event() &&
       !handling_select_range_)
     return;
@@ -4754,6 +4786,25 @@ void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
   for (auto& observer : observers_)
     observer.DidChangeCpuTiming(time);
 }
+
+#if defined(USE_NEVA_APPRUNTIME)
+void RenderFrameImpl::ResetStateToMarkNextPaintForContainer() {
+  for (auto& observer : observers_)
+    observer.DidResetStateToMarkNextPaintForContainer();
+
+  if (IsMainFrame() && GetWebFrame())
+    GetWebFrame()->ResetStateToMarkNextPaintForContainer();
+}
+#endif
+
+#if defined(USE_NEVA_MEDIA)
+content::mojom::FrameVideoWindowFactory*
+RenderFrameImpl::GetFrameVideoWindowFactory() {
+  if (!frame_video_window_factory_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_video_window_factory_);
+  return frame_video_window_factory_.get();
+}
+#endif
 
 void RenderFrameImpl::DidObserveLoadingBehavior(
     blink::LoadingBehaviorFlag behavior) {
@@ -5130,6 +5181,11 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     if (params->origin.scheme() != url::kFileScheme ||
         !render_view_->GetWebkitPreferences()
              .allow_universal_access_from_file_urls) {
+#if defined(USE_NEVA_APPRUNTIME)
+      if (!(params->origin.scheme() == url::kFileScheme &&
+            !render_view_->renderer_preferences_.file_security_origin
+                 .empty())) {
+#endif
       if (!params->origin.IsSameOriginWith(url::Origin::Create(params->url))) {
         base::debug::CrashKeyString* url = base::debug::AllocateCrashKeyString(
             "mismatched_url", base::debug::CrashKeySize::Size256);
@@ -5142,6 +5198,9 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
             origin, params->origin.GetDebugString());
         CHECK(false) << " url:" << params->url << " origin:" << params->origin;
       }
+#if defined(USE_NEVA_APPRUNTIME)
+      }
+#endif
     }
   }
   params->request_id = internal_data->request_id();
@@ -6322,6 +6381,12 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&RenderFrameImpl::BindFrameNavigationControl,
                           weak_factory_.GetWeakPtr()));
+
+#if defined(USE_NEVA_MEDIA)
+  GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&neva::FrameMediaControllerImpl::Bind,
+                          base::Unretained(&frame_media_controller_impl_)));
+#endif
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindNavigationClient, weak_factory_.GetWeakPtr()));

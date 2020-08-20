@@ -3091,7 +3091,21 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   suppress_events_until_keydown_ = false;
   monitoring_composition_info_ = false;
   StopInputEventAckTimeout();
+#if defined(USE_NEVA_APPRUNTIME)
+  // TODO(neva): This is workaround for NEVA-4754 issue with cause came from
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1995715
+  // Goal: If we're launching Enact Browser by app_shell then we shouldn't call
+  // associated_widget_input_handler_.reset() to keep Enact Browser UI work.
+  // We should check workaround neccessity in the future Chromium releases.
+  // Chromium v.84: issue still exists.
+  // "load-apps" is used explicitly to avoid unnecessary changes in build deps.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch("load-apps")) {
+    associated_widget_input_handler_.reset();
+  }
+#else
   associated_widget_input_handler_.reset();
+#endif
   widget_input_handler_.reset();
 
   input_router_ = std::make_unique<InputRouterImpl>(

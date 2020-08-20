@@ -219,6 +219,10 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // WebRTC event log fragments sent back from PeerConnection land here.
   void OnWebRtcEventLogWrite(const WTF::Vector<uint8_t>& output);
 
+#if defined(USE_NEVA_APPRUNTIME)
+  bool IsOpened() const;
+#endif
+
   bool force_encoded_audio_insertable_streams() {
     return force_encoded_audio_insertable_streams_;
   }

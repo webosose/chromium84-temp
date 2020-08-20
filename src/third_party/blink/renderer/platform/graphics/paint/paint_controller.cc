@@ -644,7 +644,10 @@ void PaintController::FinishCycle() {
     // there is an additional paint controller used to collect foreign layers,
     // and this can be logged by removing the "usage_ != kTransient" condition.
     if (usage_ != kTransient) {
+#if !defined(USE_NEVA_APPRUNTIME)
+      // Below log is too verbose.
       LOG(ERROR) << "PaintController::FinishCycle() completed";
+#endif  // defined(USE_NEVA_APPRUNTIME)
 #if DCHECK_IS_ON()
       if (VLOG_IS_ON(3))
         ShowDebugDataWithPaintRecords();

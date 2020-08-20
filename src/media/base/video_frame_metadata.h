@@ -188,6 +188,14 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // this field takes into account current playback rate.
     // Use Get/SetTimeDelta() for this key.
     WALLCLOCK_FRAME_DURATION,
+#if defined(USE_NEVA_WEBRTC)
+    // This is a boolean that indicates that the frame is a key frame or not
+    // Use Get/SetBoolean for this key.
+    KEY_FRAME,
+    // This is codec information to deliver to WebMediaPlayerWebRTC
+    // Use Get/SetInteger for this key.
+    CODEC_ID,
+#endif
 
     NUM_KEYS
   };

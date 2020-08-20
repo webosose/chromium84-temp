@@ -5,6 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
+import("//neva/neva.gni")
 import("//third_party/libaom/options.gni")
 
 jumbo_source_set("filters") {
@@ -95,6 +96,21 @@ jumbo_source_set("filters") {
     "//third_party/libyuv",
     "//ui/gfx/geometry:geometry",
   ]
+
+  if (use_neva_media) {
+    import ("//media/filters/neva/build.gni")
+    configs += neva.configs
+    if (!defined(public_configs)) {
+      public_configs = []
+    }
+    public_configs += neva.public_configs
+    deps += neva.deps
+    if (!defined(public_deps)) {
+      public_deps = []
+    }
+    public_deps += neva.public_deps
+    sources += rebase_path(neva.sources, ".")
+  }
 
   libs = []
 

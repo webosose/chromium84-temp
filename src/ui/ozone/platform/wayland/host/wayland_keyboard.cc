@@ -99,6 +99,11 @@ void WaylandKeyboard::Enter(void* data,
     auto* self = static_cast<WaylandKeyboard*>(data);
     self->delegate_->OnKeyboardFocusChanged(window, /*focused=*/true);
   }
+
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  WaylandWindow::FromSurface(surface)->HandleKeyboardEnter();
+  ///@}
 }
 
 void WaylandKeyboard::Leave(void* data,
@@ -112,6 +117,11 @@ void WaylandKeyboard::Leave(void* data,
 
   // Upon window focus lose, reset the key repeat timers.
   self->auto_repeat_handler_.StopKeyRepeat();
+
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  WaylandWindow::FromSurface(surface)->HandleKeyboardLeave();
+  ///@}
 }
 
 void WaylandKeyboard::Key(void* data,

@@ -143,6 +143,10 @@ struct DrawQuad {
   // should be clipped to |rect|. This rect lives in content space.
   bool needs_blending;
 
+  // Allows to force draw transparent color needed for punch hole.
+  [EnableIf=use_neva_punch_hole]
+  bool force_draw_transparent_color;
+
   // Optionally holds a SharedQuadState (transforms etc) shared by multiple
   // quads.
   SharedQuadState? sqs;

@@ -36,6 +36,10 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "ui/gfx/color_space.h"
 
+#if defined(USE_NEVA_MEDIA)
+#include "ui/gfx/geometry/point_f.h"
+#endif
+
 namespace blink {
 
 struct WebScreenInfo {
@@ -86,6 +90,10 @@ struct WebScreenInfo {
   // This is the shape of display.
   DisplayShape display_shape = kDisplayShapeRect;
 
+#if defined(USE_NEVA_MEDIA)
+  gfx::PointF additional_contents_scale{1.f, 1.f};
+#endif
+
   WebScreenInfo() = default;
 
   bool operator==(const WebScreenInfo& other) const {
@@ -98,7 +106,12 @@ struct WebScreenInfo {
            this->available_rect == other.available_rect &&
            this->orientation_type == other.orientation_type &&
            this->orientation_angle == other.orientation_angle &&
+#if defined(USE_NEVA_MEDIA)
+           this->display_shape == other.display_shape &&
+           this->additional_contents_scale == other.additional_contents_scale;
+#else
            this->display_shape == other.display_shape;
+#endif
   }
 
   bool operator!=(const WebScreenInfo& other) const {

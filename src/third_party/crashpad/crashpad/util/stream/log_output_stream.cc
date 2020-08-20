@@ -15,6 +15,7 @@
 #include "util/stream/log_output_stream.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include "base/logging.h"
 

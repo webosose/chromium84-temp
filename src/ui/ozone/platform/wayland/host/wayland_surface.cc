@@ -180,6 +180,42 @@ void WaylandSurface::SizeConstraintsChanged() {
   SetSizeConstraints();
 }
 
+///@name USE_NEVA_APPRUNTIME
+///@{
+void WaylandSurface::SetKeyMask(KeyMask key_mask, bool set) {
+  DCHECK(shell_surface_);
+  shell_surface_->SetKeyMask(key_mask, set);
+  connection()->ScheduleFlush();
+}
+
+void WaylandSurface::SetInputRegion(const std::vector<gfx::Rect>& region) {
+  DCHECK(shell_surface_);
+  shell_surface_->SetInputRegion(region);
+  connection()->ScheduleFlush();
+}
+
+void WaylandSurface::SetWindowProperty(const std::string& name,
+                                       const std::string& value) {
+  DCHECK(shell_surface_);
+  shell_surface_->SetWindowProperty(name, value);
+  connection()->ScheduleFlush();
+}
+
+void WaylandSurface::HandleStateChanged(PlatformWindowState state) {
+  if (state_ != state) {
+    state_ = state;
+    delegate()->OnWindowStateChanged(state_);
+  }
+}
+
+void WaylandSurface::HandleActivationChanged(bool is_activated) {
+  if (is_active_ != is_activated) {
+    is_active_ = is_activated;
+    delegate()->OnActivationChanged(is_active_);
+  }
+}
+///@}
+
 void WaylandSurface::HandleSurfaceConfigure(int32_t width,
                                             int32_t height,
                                             bool is_maximized,
@@ -290,6 +326,25 @@ void WaylandSurface::OnDragSessionClose(uint32_t dnd_action) {
 }
 
 bool WaylandSurface::OnInitialize(PlatformWindowInitProperties properties) {
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  // TODO(sergey.kipet@lge.com): Both WAM and wam-demo need the shell surface
+  // to exist upon window creation, otherwise it will crash on early calling
+  // to, for instance, 'SetWindowProperty()'.
+  // Direct calling to CreateShellSurface() (instead of the below explicit
+  // shell surface creation) prevents the XDGSurfaceWrapperImpl::ConfigureV6()
+  // callback from being invoked by Weston upon the surface creation due to a
+  // couple of extra calls to the shell surface ('UnSetFullscreen()' and
+  // 'UnSetMaximized()' also wrapped into the dedicated factory method) during
+  // the init stage, which makes Weston unresponsive to the client code.
+  // To be revised later on.
+  ShellObjectFactory factory;
+  shell_surface_ = factory.CreateShellSurfaceWrapper(connection(), this);
+  if (!shell_surface_) {
+    LOG(ERROR) << "Failed to create a ShellSurface.";
+    return false;
+  }
+  ///@}
   app_id_ = properties.wm_class_class;
   return true;
 }

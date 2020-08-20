@@ -12,6 +12,7 @@ import("//build/config/win/manifest.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//neva/neva.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -356,6 +357,8 @@ static_library("content_shell_lib") {
     "common/power_monitor_test_impl.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",
+    "common/shell_neva_switches.cc",
+    "common/shell_neva_switches.h",
     "common/shell_origin_trial_policy.cc",
     "common/shell_origin_trial_policy.h",
     "common/shell_switches.cc",
@@ -609,6 +612,10 @@ static_library("content_shell_lib") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+
+  if (use_neva_appruntime) {
+    deps += [ "//neva/app_runtime:app_runtime_inspector_resources_grit" ]
   }
 
   if (!enable_plugins) {

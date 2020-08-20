@@ -46,6 +46,10 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
+#if defined(USE_NEVA_NPAPI)
+#include "third_party/blink/renderer/bindings/core/npapi/script_controller_mix_in.h"
+#endif  // USE_NEVA_NPAPI
+
 namespace blink {
 
 class DOMWrapperWorld;
@@ -59,7 +63,12 @@ class SecurityOrigin;
 // in isolated worlds). An instance can be obtained by using
 // LocalFrame::GetScriptController().
 class CORE_EXPORT ScriptController final
-    : public GarbageCollected<ScriptController> {
+#if defined(USE_NEVA_NPAPI)
+    : public neva::ScriptControllerMixIn<ScriptController>
+#else
+    : public GarbageCollected<ScriptController>
+#endif  // USE_NEVA_NPAPI
+    {
  public:
   enum ExecuteScriptPolicy {
     kExecuteScriptWhenScriptsDisabled,
@@ -69,7 +78,12 @@ class CORE_EXPORT ScriptController final
   ScriptController(LocalFrame& frame,
                    LocalWindowProxyManager& window_proxy_manager)
       : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}
+
+#if defined(USE_NEVA_NPAPI)
+  void Trace(Visitor*) override;
+#else
   void Trace(Visitor*);
+#endif  // USE_NEVA_NPAPI
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)
@@ -162,6 +176,11 @@ class CORE_EXPORT ScriptController final
 
   const Member<LocalFrame> frame_;
   const Member<LocalWindowProxyManager> window_proxy_manager_;
+
+#if defined(USE_NEVA_NPAPI)
+  template <typename original_t>
+  friend class neva::ScriptControllerMixIn;
+#endif  // USE_NEVA_NPAPI
 
   DISALLOW_COPY_AND_ASSIGN(ScriptController);
 };

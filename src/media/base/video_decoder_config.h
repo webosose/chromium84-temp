@@ -167,6 +167,11 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // useful for decryptors that decrypts an encrypted stream to a clear stream.
   void SetIsEncrypted(bool is_encrypted);
 
+#if defined(USE_NEVA_MEDIA)
+  bool is_live_stream() const { return is_live_stream_; }
+  void set_live_stream(bool live_stream) { is_live_stream_ = live_stream; }
+#endif
+
  private:
   VideoCodec codec_ = kUnknownVideoCodec;
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -191,6 +196,9 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   VideoColorSpace color_space_info_;
   base::Optional<HDRMetadata> hdr_metadata_;
+#if defined(USE_NEVA_MEDIA)
+  bool is_live_stream_ = false;
+#endif
 
   // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler
   // generated copy constructor and assignment operator. Since the extra data is

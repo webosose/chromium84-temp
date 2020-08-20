@@ -59,6 +59,8 @@ class ManifestManagerHost
   using CallbackMap = base::IDMap<std::unique_ptr<GetManifestCallback>>;
 
   blink::mojom::ManifestManager& GetManifestManager();
+
+  void DispatchPendingCallbacks();
   void OnConnectionError();
 
   void OnRequestManifestResponse(int request_id,

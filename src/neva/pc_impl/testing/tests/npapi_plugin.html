@@ -1,0 +1,60 @@
+<html>
+<head>
+<style>
+body
+{
+  background-color: #FFFFFF;
+}
+</style>
+<script language="javascript" type="text/javascript">
+document.addEventListener("DOMContentLoaded",
+  function(event)
+  {
+    document.getElementById('location').value = document.embeds[0].weatherLocation;
+  }
+);
+function btn_click(str)
+{
+  var d = document.getElementById("out_" + str);
+  if (d.hasChildNodes())
+    d.removeChild(d.firstChild);
+  d.appendChild(document.createTextNode(str === "time" ? document.embeds[0].getSystemTime().time : document.embeds[0][str]));
+}
+function btn_click2()
+{
+  document.embeds[0].setLocation(document.getElementById("location").value);
+}
+</script>
+</head>
+<body>
+<embed type="application/x-netcast-info">
+<div>
+<button type="button" onclick="btn_click('manufacturer')">manufacturer</button>
+<span id="out_manufacturer"></span>
+</div>
+<div>
+<button type="button" onclick="btn_click('modelName')">modelName</button>
+<span id="out_modelName"></span>
+</div>
+<div>
+<button type="button" onclick="btn_click('serialNumber')">serialNumber</button>
+<span id="out_serialNumber"></span>
+</div>
+<div>
+<button type="button" onclick="btn_click('osdResolution')">osdResolution</button>
+<span id="out_osdResolution"></span>
+</div>
+<div>
+<button type="button" onclick="btn_click('time')">getSystemTime().time</button>
+<span id="out_time"></span>
+</div>
+<div>
+<button type="button" onclick="document.embeds[0].setWeatherLocation(document.getElementById('location').value);">setWeatherLocation</button>
+<input id="location" type="text" value="">
+</div>
+<div>
+<button type="button" onclick="btn_click('weather')">weather</button>
+<span id="out_weather"></span>
+</div>
+</body>
+</html>

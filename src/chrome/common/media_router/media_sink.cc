@@ -24,7 +24,7 @@ MediaSink::MediaSink() = default;
 MediaSink::~MediaSink() = default;
 
 MediaSink& MediaSink::operator=(const MediaSink& other) = default;
-MediaSink& MediaSink::operator=(MediaSink&& other) noexcept = default;
+MediaSink& MediaSink::operator=(MediaSink&& other) = default;
 
 bool MediaSink::IsMaybeCloudSink() const {
   switch (icon_type_) {

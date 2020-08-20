@@ -105,7 +105,7 @@ class BookmarkLoadDetails {
   const std::string& sync_metadata_str() const { return sync_metadata_str_; }
 
   void CreateUrlIndex();
-  UrlIndex* url_index() { return url_index_.get(); }
+  UrlIndex* url_index();
 
  private:
   // Creates one of the possible permanent nodes (bookmark bar node, other node

@@ -14,6 +14,16 @@ namespace {
 class StubGpuPlatformSupportHost : public GpuPlatformSupportHost {
  public:
   // GpuPlatformSupportHost:
+
+#if defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  void OnGpuProcessLaunched(
+      int host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+      base::RepeatingCallback<void(IPC::Message*)> send_callback) override {}
+  void OnMessageReceived(const IPC::Message&) override {}
+#endif  // defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+
   void OnChannelDestroyed(int host_id) override {}
   void OnGpuServiceLaunched(
       int host_id,

@@ -138,6 +138,26 @@ Resource* PreloadRequest::Start(Document* document) {
     // the async request to the blocked script here.
   }
 
+#if defined(USE_NEVA_APPRUNTIME)
+  auto* frame = document->Loader()->GetFrame();
+  if (frame) {
+    bool can_load_universal_access = false;
+    if (frame->GetSettings()->GetAllowUniversalAccessFromFileURLs() &&
+        document->Url().ProtocolIs("file"))
+      can_load_universal_access = true;
+
+    bool can_load_local_file = false;
+    if (frame->GetSettings()->GetAllowLocalResourceLoad() &&
+        !document->Url().ProtocolIs("file") &&
+        params.MutableResourceRequest().Url().ProtocolIs("file"))
+      can_load_local_file = true;
+
+    if (can_load_universal_access || can_load_local_file)
+      params.MutableResourceRequest().SetMode(
+          network::mojom::RequestMode::kNoCors);
+  }
+#endif
+
   return PreloadHelper::StartPreload(resource_type_, params, *document);
 }
 

@@ -8,12 +8,18 @@ import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//extensions/shell/neva/extensions_shell.gni")
+import("//neva/neva.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 if (is_linux) {
   import("//build/linux/extract_symbols.gni")
+}
+
+if (use_neva_extensions) {
+  import("//extensions/shell/neva_extensions.gni")
 }
 
 assert(enable_extensions)
@@ -80,6 +86,19 @@ source_set("app_shell_lib") {
     if (use_x11) {
       deps += [ "//ui/events/devices/x11" ]
     }
+  }
+
+  if (use_ozone && ozone_platform_wayland_external) {
+    deps += [
+      "//ozone/ui/webui",
+    ]
+  }
+
+  if (use_neva_media) {
+    deps += [
+      "//components/cdm/common",
+      "//components/cdm/renderer",
+    ]
   }
 
   sources = [
@@ -229,6 +248,24 @@ source_set("app_shell_lib") {
     ]
   }
 
+  if (use_neva_appruntime) {
+    deps += [
+      "//neva/app_runtime",
+      "//neva/app_runtime/public/mojom:mojom_app_runtime_blink",
+      "//neva/injection",
+     ]
+  }
+
+  if (is_webos) {
+    sources += [
+      "neva/webos_language_listener.cc",
+      "neva/webos_language_listener.h",
+      "neva/webos_register_app.cc",
+      "neva/webos_register_app.h",
+    ]
+    deps += ["//webos:webos_impl"]
+  }
+
   if (enable_nacl) {
     sources += [
       "browser/shell_nacl_browser_delegate.cc",
@@ -252,9 +289,20 @@ source_set("app_shell_lib") {
       }
     }
   }
+
+  if (use_neva_extensions && !use_cbe) {
+    sources -= webview_sources
+  }
+
+  if (use_neva_extensions && !use_cbe && is_desktop_linux) {
+    sources -= [
+      "browser/api/file_system/shell_file_system_delegate.cc",
+      "browser/api/file_system/shell_file_system_delegate.h",
+    ]
+  }
 }
 
-executable("app_shell") {
+app_shell_executable("app_shell") {
   # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
   testonly = true
   sources = [ "app/shell_main.cc" ]

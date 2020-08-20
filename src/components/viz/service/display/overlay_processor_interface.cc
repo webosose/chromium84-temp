@@ -116,7 +116,13 @@ OverlayProcessorInterface::CreateOverlayProcessor(
 
   return std::make_unique<OverlayProcessorOzone>(
       overlay_enabled, std::move(overlay_candidates),
+#if defined(USE_NEVA_MEDIA)
+      std::move(renderer_settings.overlay_strategies), shared_image_interface,
+      surface_handle);
+#else
       std::move(renderer_settings.overlay_strategies), shared_image_interface);
+#endif
+
 #elif defined(OS_ANDROID)
   bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
   if (capabilities.supports_surfaceless) {

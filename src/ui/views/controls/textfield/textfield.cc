@@ -69,6 +69,10 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
+#if defined(OS_WEBOS)
+#include "ui/events/keycodes/webos/keycode_converter.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
 #endif
@@ -1501,6 +1505,13 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
     OnEditFailed();
     return;
   }
+
+#if defined(OS_WEBOS)
+  // LG system key should not be printed
+  if (ui::KeycodeConverterWebOS::IsKeyCodeNonPrintable(
+          event.GetConflatedWindowsKeyCode()))
+    return;
+#endif
 
   // Filter all invalid chars and all characters with Alt modifier (and Search
   // on ChromeOS, Ctrl on Linux). But allow characters with the AltGr modifier.

@@ -343,6 +343,14 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
              << GetLastEGLErrorString();
     return false;
   }
+// Added for ozone-wayland port
+// Fix crash when switching to console(VT) mode
+// Buffer swapping should not be synchronized so that the GPU process
+// is not blocked by waiting for a frame update from Weston.
+#if defined(USE_OZONE) && defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+  if (!surface->IsOffscreen())
+    eglSwapInterval(display_, 0);
+#endif
 
   // Set this as soon as the context is current, since we might call into GL.
   BindGLApi();

@@ -60,12 +60,48 @@
 #include "content/public/browser/child_process_data.h"
 #endif
 
+#if defined(USE_NEVA_APPRUNTIME)
+#include "base/neva/base_switches.h"
+#include "content/public/browser/login_delegate.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/shell/common/shell_neva_switches.h"
+#include "extensions/browser/extension_util.h"
+#include "extensions/common/manifest_handlers/app_isolation_info.h"
+#include "neva/pal_service/public/mojom/constants.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "ui/base/ui_base_neva_switches.h"
+#endif
+
 using base::CommandLine;
 using content::BrowserContext;
 using content::BrowserThread;
 
 namespace extensions {
 namespace {
+#if defined(USE_NEVA_APPRUNTIME)
+const char kCacheStoreFile[] = "Cache";
+const char kCookieStoreFile[] = "Cookies";
+const int kDefaultDiskCacheSize = 16 * 1024 * 1024;  // default size is 16MB
+
+void AuthRequestCallback(
+    LoginAuthRequiredCallback callback,
+    const base::Optional<net::AuthCredentials>& credentials,
+    bool should_cancel) {
+  if (credentials) {
+    std::move(callback).Run(credentials);
+    return;
+  }
+}
+
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context) {
+  const Extension* extension = ExtensionRegistry::Get(context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(extension_site_url);
+
+  return extension && AppIsolationInfo::HasIsolatedStorage(extension);
+}
+#endif
 
 ShellContentBrowserClient* g_instance = nullptr;
 
@@ -160,6 +196,16 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
   if (!extension)
     return;
 
+#if defined(USE_NEVA_APPRUNTIME)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kV8SnapshotBlobPath)) {
+    v8_snapshot_path_ =
+        std::make_pair(site_instance->GetProcess()->GetID(),
+                       base::CommandLine::ForCurrentProcess()
+                           ->GetSwitchValuePath(::switches::kV8SnapshotBlobPath)
+                           .value());
+  }
+#endif
   ProcessMap::Get(browser_main_parts_->browser_context())
       ->Insert(extension->id(),
                site_instance->GetProcess()->GetID(),
@@ -204,6 +250,21 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->GetSwitchValueASCII(::switches::kProcessType);
   if (process_type == ::switches::kRendererProcess)
     AppendRendererSwitches(command_line);
+#if defined(USE_NEVA_APPRUNTIME)
+  // Append v8 snapshot path if given
+  if (v8_snapshot_path_.first == child_process_id) {
+    command_line->AppendSwitchPath(::switches::kV8SnapshotBlobPath,
+                                   base::FilePath(v8_snapshot_path_.second));
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kUseOzoneWaylandVkb))
+    command_line->AppendSwitch(::switches::kUseOzoneWaylandVkb);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kOzoneWaylandUseXDGShell))
+    command_line->AppendSwitch(::switches::kOzoneWaylandUseXDGShell);
+#endif
 }
 
 content::SpeechRecognitionManagerDelegate*
@@ -393,5 +454,111 @@ const Extension* ShellContentBrowserClient::GetExtension(
   return registry->enabled_extensions().GetExtensionOrAppByURL(
       site_instance->GetSiteURL());
 }
+
+#if defined(USE_NEVA_APPRUNTIME)
+std::unique_ptr<content::LoginDelegate>
+ShellContentBrowserClient::CreateLoginDelegate(
+    const net::AuthChallengeInfo& auth_info,
+    content::WebContents* web_contents,
+    const content::GlobalRequestID& request_id,
+    bool is_request_for_main_frame,
+    const GURL& url,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    bool first_auth_attempt,
+    LoginAuthRequiredCallback auth_required_callback) {
+  BrowserContext* browser_context = GetBrowserContext();
+  extensions::WebRequestAPI* api =
+      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+          browser_context);
+  auto continuation =
+      base::BindOnce(&AuthRequestCallback, std::move(auth_required_callback));
+
+  if (api->MaybeProxyAuthRequest(
+          browser_context, auth_info, std::move(response_headers), request_id,
+          is_request_for_main_frame, std::move(continuation))) {
+  }
+
+  return std::make_unique<content::LoginDelegate>();
+}
+
+void ShellContentBrowserClient::GetStoragePartitionConfigForSite(
+    content::BrowserContext* browser_context,
+    const GURL& site,
+    bool can_be_default,
+    std::string* partition_domain,
+    std::string* partition_name,
+    bool* in_memory) {
+  // Default to the browser-wide storage partition and override based on |site|
+  // below.
+  partition_domain->clear();
+  partition_name->clear();
+  *in_memory = false;
+
+  bool success = extensions::WebViewGuest::GetGuestPartitionConfigForSite(
+      site, partition_domain, partition_name, in_memory);
+
+  if (!success && site.SchemeIs(extensions::kExtensionScheme)) {
+    // If |can_be_default| is false, the caller is stating that the |site|
+    // should be parsed as if it had isolated storage. In particular it is
+    // important to NOT check ExtensionService for the is_storage_isolated()
+    // attribute because this code path is run during Extension uninstall
+    // to do cleanup after the Extension has already been unloaded from the
+    // ExtensionService.
+    bool is_isolated = !can_be_default;
+    if (can_be_default) {
+      if (SiteHasIsolatedStorage(site, browser_context))
+        is_isolated = true;
+    }
+
+    if (is_isolated) {
+      CHECK(site.has_host());
+      // For extensions with isolated storage, the the host of the |site| is
+      // the |partition_domain|. The |in_memory| and |partition_name| are only
+      // used in guest schemes so they are cleared here.
+      *partition_domain = site.host();
+      *in_memory = false;
+      partition_name->clear();
+    }
+    success = true;
+  }
+
+  // Assert that if |can_be_default| is false, the code above must have found a
+  // non-default partition.  If this fails, the caller has a serious logic
+  // error about which StoragePartition they expect to be in and it is not
+  // safe to continue.
+  CHECK(can_be_default || !partition_domain->empty());
+}
+
+void ShellContentBrowserClient::ConfigureNetworkContextParams(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  network_context_params->user_agent = GetUserAgent();
+  network_context_params->accept_language = "en-us,en";
+
+  int disk_cache_size = kDefaultDiskCacheSize;
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(::switches::kShellDiskCacheSize))
+    base::StringToInt(
+        cmd_line->GetSwitchValueASCII(::switches::kShellDiskCacheSize),
+        &disk_cache_size);
+
+  network_context_params->cookie_path =
+      context->GetPath().Append(kCookieStoreFile);
+  network_context_params->enable_encrypted_cookies = false;
+  network_context_params->http_cache_max_size = disk_cache_size;
+  network_context_params->http_cache_path =
+      context->GetPath().Append(kCacheStoreFile);
+
+  // Only firstly created NetworkContext should be marked as primary.
+  // For app-shell case first creation request has empty argument
+  // relative_partition_path.
+  // Next requests (if any) will have this argument not empty.
+  if (relative_partition_path.empty())
+    network_context_params->primary_network_context = true;
+}
+#endif
 
 }  // namespace extensions

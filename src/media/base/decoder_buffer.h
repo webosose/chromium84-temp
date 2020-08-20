@@ -195,6 +195,14 @@ class MEDIA_EXPORT DecoderBuffer
   // Replaces any existing side data with data copied from |side_data|.
   void CopySideDataFrom(const uint8_t* side_data, size_t side_data_size);
 
+#if defined(ENABLE_LG_SVP) && defined(USE_NEVA_MEDIA)
+  bool use_svp_serialized_data() const { return use_svp_serialized_data_; }
+
+  void set_use_svp_serialized_data(bool use_svp_serialized_data) {
+    use_svp_serialized_data_ = use_svp_serialized_data;
+  }
+#endif
+
  protected:
   friend class base::RefCountedThreadSafe<DecoderBuffer>;
 
@@ -251,6 +259,10 @@ class MEDIA_EXPORT DecoderBuffer
 
   // Constructor helper method for memory allocations.
   void Initialize();
+
+#if defined(ENABLE_LG_SVP) && defined(USE_NEVA_MEDIA)
+  bool use_svp_serialized_data_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBuffer);
 };

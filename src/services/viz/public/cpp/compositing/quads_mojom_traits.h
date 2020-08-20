@@ -556,6 +556,13 @@ struct StructTraits<viz::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
     return input.quad->needs_blending;
   }
 
+#if defined(USE_NEVA_PUNCH_HOLE)
+  static bool force_draw_transparent_color(
+      const DrawQuadWithSharedQuadState& input) {
+    return input.quad->force_draw_transparent_color;
+  }
+#endif  // USE_NEVA_PUNCH_HOLE
+
   static OptSharedQuadState sqs(const DrawQuadWithSharedQuadState& input) {
     return {input.shared_quad_state};
   }

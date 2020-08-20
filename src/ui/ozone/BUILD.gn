@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//neva/neva.gni")
 import("//testing/test.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -47,6 +48,11 @@ if (ozone_platform_wayland) {
   ozone_platforms += [ "wayland" ]
   ozone_platform_deps += [ "platform/wayland" ]
   ozone_platform_test_deps += [ "platform/wayland:wayland_unittests" ]
+}
+
+if (ozone_platform_wayland_external) {
+  ozone_platforms += [ "wayland" ]
+  ozone_platform_deps += [ "//ozone:ozone_wayland" ]
 }
 
 if (ozone_platform_x11) {
@@ -96,6 +102,15 @@ jumbo_component("ozone_base") {
     "public/swap_completion_callback.h",
     "public/system_input_injector.h",
   ]
+
+  if (ozone_platform_wayland_external) {
+    sources += [
+      "public/gpu_platform_support.cc",
+      "public/gpu_platform_support.h",
+    ]
+
+    visibility += [ "//ozone:ozone_wayland" ]
+  }
 
   defines = [ "IS_OZONE_BASE_IMPL" ]
 
@@ -196,6 +211,13 @@ source_set("platform") {
   # This is used for platform tests.
   visibility += [ "//ui/ozone/platform/*" ]
 
+  if (ozone_platform_wayland_external) {
+    visibility += [
+      "//ozone/ui/desktop_aura/*",
+      "//ozone/ui/webui",
+    ]
+  }
+
   # This can be used for out of tree platforms tests.
   visibility += ozone_external_platform_visibility
 }
@@ -255,6 +277,10 @@ action("generate_ozone_platform_list") {
       ] + ozone_platforms
 
   visibility += [ "//media:*" ]
+
+  if (ozone_platform_wayland_external) {
+    visibility += ["//ozone/ui/desktop_aura:generate_desktop_factory_ozone_list",]
+  }
 }
 
 action("generate_constructor_list") {

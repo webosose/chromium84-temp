@@ -138,6 +138,9 @@ class WebPlugin {
   virtual void DidReceiveData(const char* data, size_t data_length) = 0;
   virtual void DidFinishLoading() = 0;
   virtual void DidFailLoading(const WebURLError&) = 0;
+#if defined(USE_NEVA_MEDIA)
+  virtual void DidSuppressMediaPlay(bool suppressed) {}
+#endif
 
   // Printing interface.
   // Whether the plugin supports its own paginated print. The other print

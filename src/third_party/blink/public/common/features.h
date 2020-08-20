@@ -32,6 +32,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kMaxOverlapBoundsForFixed;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kTopLevelAwait;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
+#if defined(USE_FILESCHEME_CODECACHE)
+BLINK_COMMON_EXPORT extern const base::Feature kLocalResourceCodeCache;
+#endif
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;

@@ -115,4 +115,15 @@ void OzonePlatform::AfterSandboxEntry() {
   DCHECK(!single_process_);
 }
 
+#if defined(OZONE_PLATFORM_WAYLAND_EXTERNAL)
+ui::GpuPlatformSupport* OzonePlatform::GetGpuPlatformSupport() {
+  return nullptr;
+}
+#endif
+
+#if defined(USE_NEVA_MEDIA)
+ui::VideoWindowController* OzonePlatform::GetVideoWindowController() {
+  return nullptr;
+}
+#endif  // defined(USE_NEVA_MEDIA)
 }  // namespace ui

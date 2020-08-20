@@ -22,7 +22,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
     : public InputMethodBase,
       public LinuxInputMethodContextDelegate {
  public:
-  explicit InputMethodAuraLinux(internal::InputMethodDelegate* delegate);
+  explicit InputMethodAuraLinux(internal::InputMethodDelegate* delegate, unsigned handle = 0);
   ~InputMethodAuraLinux() override;
 
   LinuxInputMethodContext* GetContextForTesting(bool is_simple);
@@ -33,6 +33,11 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;
+
+  ///@name USE_NEVA_APPRUNTIME
+  ///@{
+  LinuxInputMethodContext* GetInputMethodContext() override;
+  ///@}
 
   // Overriden from ui::LinuxInputMethodContextDelegate
   void OnCommit(const base::string16& text) override;
@@ -50,6 +55,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   void ConfirmCompositionText(bool reset_engine, bool keep_selection) override;
 
  private:
+  friend class InputMethodAuraLinuxNeva;
   bool HasInputMethodResult();
   bool NeedInsertChar() const;
   ui::EventDispatchDetails SendFakeProcessKeyEvent(ui::KeyEvent* event) const

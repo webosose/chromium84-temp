@@ -161,6 +161,15 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("content_gpu", "browser")
           .RequireCapability("resource_coordinator", "app")
           .RequireCapability("resource_coordinator", "heap_profiler_helper")
+#if defined(USE_NEVA_APPRUNTIME)
+          .RequireCapability("pal", "pal:memorymanager")
+          .RequireCapability("pal", "pal:pal_service")
+          .RequireCapability("pal", "pal:sample")
+          .RequireCapability("pal", "pal:system_servicebridge")
+#endif
+#if defined(USE_NEVA_MEDIA)
+          .RequireCapability("neva_media", "neva_media:neva_media_service")
+#endif
           .Build()};
   return *manifest;
   // clang-format on

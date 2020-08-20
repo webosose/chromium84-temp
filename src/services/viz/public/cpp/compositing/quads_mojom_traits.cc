@@ -234,6 +234,9 @@ bool StructTraits<viz::mojom::DrawQuadDataView, viz::DrawQuad>::Read(
     return false;
 
   out->needs_blending = data.needs_blending();
+#if defined(USE_NEVA_PUNCH_HOLE)
+  out->force_draw_transparent_color = data.force_draw_transparent_color();
+#endif  // USE_NEVA_PUNCH_HOLE
   return data.ReadDrawQuadState(out);
 }
 

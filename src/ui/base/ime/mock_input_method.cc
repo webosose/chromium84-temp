@@ -129,6 +129,13 @@ MockInputMethod::GetInputMethodKeyboardController() {
   return &keyboard_controller_;
 }
 
+///@name USE_NEVA_APPRUNTIME
+///@{
+LinuxInputMethodContext* MockInputMethod::GetInputMethodContext() {
+  return nullptr;
+}
+///@}
+
 const std::vector<std::unique_ptr<ui::KeyEvent>>&
 MockInputMethod::GetKeyEventsForTesting() {
   return key_events_for_testing_;

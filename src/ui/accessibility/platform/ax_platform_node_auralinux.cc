@@ -186,13 +186,17 @@ void SetIntPointerValueIfNotNull(int* pointer, int value) {
     *pointer = value;
 }
 
+#if defined(ATK_230)
 bool SupportsAtkComponentScrollingInterface() {
   return dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point");
 }
+#endif
 
+#if defined(ATK_232)
 bool SupportsAtkTextScrollingInterface() {
   return dlsym(RTLD_DEFAULT, "atk_text_scroll_substring_to_point");
 }
+#endif
 
 AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   AXPlatformNodeAuraLinux* node =
@@ -1246,6 +1250,7 @@ char* GetStringAtOffset(AtkText* atk_text,
 }
 #endif
 
+#if defined(ATK_230)
 gfx::Rect GetUnclippedParentHypertextRangeBoundsRect(
     AXPlatformNodeDelegate* ax_platform_node_delegate,
     const int start_offset,
@@ -1269,6 +1274,7 @@ gfx::Rect GetUnclippedParentHypertextRangeBoundsRect(
                              AXClippingBehavior::kClipped)
              .OffsetFromOrigin();
 }
+#endif
 
 void GetCharacterExtents(AtkText* atk_text,
                          int offset,

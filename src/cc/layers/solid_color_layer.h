@@ -24,11 +24,24 @@ class CC_EXPORT SolidColorLayer : public Layer {
 
   void SetBackgroundColor(SkColor color) override;
 
+#if defined(USE_NEVA_PUNCH_HOLE)
+  void PushPropertiesTo(LayerImpl* layer) override;
+
+  // Sets whether the quads with transparent color will be drawn
+  // or ignore as meaninless.
+  // Defaults to false.
+  void SetForceDrawTransparentColor(bool force_draw);
+#endif  // USE_NEVA_PUNCH_HOLE
+
  protected:
   SolidColorLayer();
 
  private:
   ~SolidColorLayer() override;
+
+#if defined(USE_NEVA_PUNCH_HOLE)
+  bool force_draw_transparent_color_;
+#endif  // USE_NEVA_PUNCH_HOLE
 };
 
 }  // namespace cc

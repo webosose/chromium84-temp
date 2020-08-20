@@ -93,6 +93,12 @@ class WebWidgetClient {
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
 
+#if defined(USE_NEVA_APPRUNTIME)
+  // FIXME(neva): To check if we still need it.
+  // SetVisibleState functionality was refactored after v.81
+  virtual void SetVisible(bool) {}
+#endif
+
   // Returns information about the screen where this view's widgets are being
   // displayed.
   virtual WebScreenInfo GetScreenInfo() { return {}; }

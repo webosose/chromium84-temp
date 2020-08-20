@@ -67,6 +67,10 @@
 #include "base/win/shortcut.h"
 #endif
 
+#if defined(USE_NEVA_APPRUNTIME)
+#include "net/neva/appdrm_common.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -474,11 +478,20 @@ class FileURLLoader : public network::mojom::URLLoader {
       return;
     }
 
+#if defined(USE_FILESCHEME_CODECACHE)
+    head->request_time = base::Time::Now();
+#endif
+
     base::File::Info info;
     if (!base::GetFileInfo(path, &info)) {
       OnClientComplete(net::ERR_FILE_NOT_FOUND, std::move(observer));
       return;
     }
+
+#if defined(USE_FILESCHEME_CODECACHE)
+    head->response_time = base::Time::Now();
+    head->file_last_modified_time = info.last_modified;
+#endif
 
     if (info.is_directory) {
       if (directory_loading_policy == DirectoryLoadingPolicy::kFail) {
@@ -515,12 +528,21 @@ class FileURLLoader : public network::mojom::URLLoader {
 
     // Full file path with all symbolic links resolved.
     base::FilePath full_path = base::MakeAbsoluteFilePath(path);
+#if defined(USE_NEVA_APPRUNTIME)
+    if (file_access_policy == FileAccessPolicy::kRestricted &&
+        !GetContentClient()->browser()->IsFileAccessAllowedForRequest(
+            path, full_path, profile_path, request)) {
+      OnClientComplete(net::ERR_ACCESS_DENIED, std::move(observer));
+      return;
+    }
+#else
     if (file_access_policy == FileAccessPolicy::kRestricted &&
         !GetContentClient()->browser()->IsFileAccessAllowed(path, full_path,
                                                             profile_path)) {
       OnClientComplete(net::ERR_ACCESS_DENIED, std::move(observer));
       return;
     }
+#endif
 
 #if defined(OS_WIN)
     base::FilePath shortcut_target;
@@ -575,6 +597,15 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnStart();
 
+#if defined(USE_NEVA_APPRUNTIME)
+    auto file_data_source = std::make_unique<net::AppDRMFileDataSource>(
+        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ), path);
+
+    mojo::DataPipeProducer::DataSource::ReadResult read_result;
+    read_result.bytes_read = 0;
+
+    std::vector<char> initial_read_buffer(net::kMaxBytesToSniff);
+#else
     auto file_data_source = std::make_unique<mojo::FileDataSource>(
         base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
     mojo::DataPipeProducer::DataSource* data_source = file_data_source.get();
@@ -582,6 +613,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     std::vector<char> initial_read_buffer(net::kMaxBytesToSniff);
     auto read_result =
         data_source->Read(0u, base::span<char>(initial_read_buffer));
+#endif
     if (read_result.result != MOJO_RESULT_OK) {
       // This can happen when the file is unreadable (which can happen during
       // corruption). We need to be sure to inform the observer that we've

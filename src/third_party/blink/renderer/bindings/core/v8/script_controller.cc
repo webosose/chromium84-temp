@@ -76,6 +76,9 @@ namespace blink {
 void ScriptController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_manager_);
+#if defined(USE_NEVA_NPAPI)
+  neva::ScriptControllerMixIn<ScriptController>::Trace(visitor);
+#endif  // USE_NEVA_NPAPI
 }
 
 void ScriptController::ClearForClose() {
@@ -224,6 +227,14 @@ v8::ExtensionConfiguration ScriptController::ExtensionsFor(
 void ScriptController::ClearWindowProxy() {
   // V8 binding expects ScriptController::clearWindowProxy only be called when a
   // frame is loading a new page. This creates a new context for the new page.
+
+#if defined(USE_NEVA_NPAPI)
+  // The V8 context must be available for |ClearScriptObjects()|.
+  // The below call must be before |ClearForNavigation()| which disposes the V8
+  // context.
+  ClearScriptObjects();
+#endif  // USE_NEVA_NPAPI
+
   window_proxy_manager_->ClearForNavigation();
   MainThreadDebugger::Instance()->DidClearContextsForFrame(GetFrame());
 }

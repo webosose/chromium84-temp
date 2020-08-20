@@ -1813,6 +1813,10 @@ bool AXObject::IsSubWidget() const {
       if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
         return true;
 
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+      return IsAnyOfGrid();
+#else
       // Otherwise it's only a subwidget if it's in a grid or treegrid,
       // not in a table.
       return std::any_of(
@@ -1820,7 +1824,7 @@ bool AXObject::IsSubWidget() const {
             return ancestor.RoleValue() == ax::mojom::Role::kGrid ||
                    ancestor.RoleValue() == ax::mojom::Role::kTreeGrid;
           });
-
+#endif
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kTab:
@@ -3614,6 +3618,19 @@ LayoutObject* AXObject::GetLayoutObjectForNativeScrollAction() const {
   return node->GetLayoutObject();
 }
 
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+bool AXObject::IsAnyOfGrid() const {
+  for (auto ancestor = AncestorsBegin(); ancestor != AncestorsEnd();
+       ++ancestor) {
+    if (ancestor->RoleValue() == ax::mojom::blink::Role::kGrid ||
+        ancestor->RoleValue() == ax::mojom::blink::Role::kTreeGrid)
+      return true;
+  }
+  return false;
+}
+#endif
+
 bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   LayoutObject* layout_object = GetLayoutObjectForNativeScrollAction();
   if (!layout_object)
@@ -4042,12 +4059,17 @@ bool AXObject::SupportsARIAReadOnly() const {
     return true;
 
   if (ui::IsCellOrTableHeader(RoleValue())) {
+// (neva) GCC 8.x.x
+#if !defined(__clang__)
+    return IsAnyOfGrid();
+#else
     // For cells and row/column headers, readonly is supported within a grid.
     return std::any_of(
         AncestorsBegin(), AncestorsEnd(), [](const AXObject& ancestor) {
           return ancestor.RoleValue() == ax::mojom::Role::kGrid ||
                  ancestor.RoleValue() == ax::mojom::Role::kTreeGrid;
         });
+#endif
   }
 
   return false;

@@ -18,7 +18,12 @@ bool ScreenInfo::operator==(const ScreenInfo& other) const {
          display_frequency == other.display_frequency && rect == other.rect &&
          available_rect == other.available_rect &&
          orientation_type == other.orientation_type &&
+#if defined(USE_NEVA_MEDIA)
+         orientation_angle == other.orientation_angle &&
+         additional_contents_scale == other.additional_contents_scale;
+#else
          orientation_angle == other.orientation_angle;
+#endif
 }
 
 bool ScreenInfo::operator!=(const ScreenInfo& other) const {

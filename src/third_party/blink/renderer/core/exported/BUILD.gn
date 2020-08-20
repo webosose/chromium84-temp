@@ -4,6 +4,8 @@
 import("//build/config/dcheck_always_on.gni")
 import("//third_party/blink/renderer/core/core.gni")
 
+import("//neva/neva.gni")
+
 blink_core_sources("exported") {
   sources = [
     "local_frame_client_impl.cc",
@@ -80,6 +82,23 @@ blink_core_sources("exported") {
     "web_view_impl.cc",
     "web_view_impl.h",
   ]
+
+  if (use_neva_npapi) {
+    sources += [
+      "legacy_web_plugin.cc",
+      "legacy_web_plugin.h",
+      "legacy_web_plugin_info.h",
+      "legacy_web_plugin_list.cc",
+      "legacy_web_plugin_list.h",
+      "np_plugin.h",
+      "plugin_stream.cc",
+      "plugin_stream.h",
+      "plugin_stream_posix.cc",
+      "plugin_stream_url.cc",
+      "plugin_stream_url.h",
+      "web_bindings.cc",
+    ]
+  }
 
   if (is_debug || dcheck_always_on) {
     sources += [ "web_disallow_transition_scope.cc" ]

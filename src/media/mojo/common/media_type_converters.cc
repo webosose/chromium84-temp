@@ -60,6 +60,9 @@ TypeConverter<media::mojom::DecoderBufferPtr, media::DecoderBuffer>::Convert(
   mojo_buffer->timestamp = input.timestamp();
   mojo_buffer->duration = input.duration();
   mojo_buffer->is_key_frame = input.is_key_frame();
+#if defined(ENABLE_LG_SVP) && defined(USE_NEVA_MEDIA)
+  mojo_buffer->use_svp_serialized_data = input.use_svp_serialized_data();
+#endif
   mojo_buffer->data_size = base::checked_cast<uint32_t>(input.data_size());
   mojo_buffer->front_discard = input.discard_padding().first;
   mojo_buffer->back_discard = input.discard_padding().second;
@@ -100,6 +103,9 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   buffer->set_timestamp(input->timestamp);
   buffer->set_duration(input->duration);
   buffer->set_is_key_frame(input->is_key_frame);
+#if defined(ENABLE_LG_SVP) && defined(USE_NEVA_MEDIA)
+  buffer->set_use_svp_serialized_data(input->use_svp_serialized_data);
+#endif
 
   if (input->decrypt_config) {
     buffer->set_decrypt_config(

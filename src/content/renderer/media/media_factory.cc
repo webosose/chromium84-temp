@@ -95,6 +95,18 @@
 #include "media/remoting/renderer_controller.h"         // nogncheck
 #endif
 
+#if defined(USE_NEVA_MEDIA)
+#include "content/renderer/media/neva/mojo_media_player_factory.h"
+#include "media/base/media_switches_neva.h"
+#include "media/blink/neva/webmediaplayer_neva_factory.h"
+#include "media/blink/neva/webmediaplayer_params_neva.h"
+#include "media/renderers/neva/neva_media_player_renderer_factory.h"
+#endif
+
+#if defined(USE_NEVA_WEBRTC)
+#include "media/blink/neva/webmediaplayer_webrtc.h"
+#endif
+
 namespace {
 class FrameFetchContext : public media::ResourceFetchContext {
  public:
@@ -359,10 +371,22 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       std::move(handlers));
 
   base::WeakPtr<media::MediaObserver> media_observer;
+
+#if defined(USE_NEVA_MEDIA)
+  bool use_neva_media = false;
+  use_neva_media = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebMediaPlayerNeva);
+  if (client->ContentTypeDecoder() == "sw")
+    use_neva_media = false;
+#endif
+
   auto factory_selector = CreateRendererFactorySelector(
       media_log.get(), use_media_player_renderer,
       render_frame_->GetRenderFrameMediaPlaybackOptions()
           .is_mojo_renderer_enabled(),
+#if defined(USE_NEVA_MEDIA)
+      use_neva_media,
+#endif
       GetDecoderFactory(),
       std::make_unique<media::RemotePlaybackClientWrapperImpl>(client),
       &media_observer);
@@ -456,6 +480,39 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       std::make_unique<media::VideoFrameCompositor>(
           params->video_frame_compositor_task_runner(), std::move(submitter));
 
+#if defined(USE_NEVA_MEDIA)
+  const blink::mojom::RendererPreferences& renderer_prefs =
+      render_frame_->GetRendererPreferences();
+  const RenderWidget* render_widget = render_frame_->GetLocalRootRenderWidget();
+
+  std::unique_ptr<media::WebMediaPlayerParamsNeva> params_neva(
+      new media::WebMediaPlayerParamsNeva(base::BindRepeating(
+          &content::mojom::FrameVideoWindowFactory::CreateVideoWindow,
+          base::Unretained(render_frame_->GetFrameVideoWindowFactory()))));
+  params_neva->set_application_id(
+      blink::WebString::FromUTF8(renderer_prefs.application_id));
+  params_neva->set_use_unlimited_media_policy(
+      renderer_prefs.use_unlimited_media_policy);
+  params_neva->set_additional_contents_scale(
+      render_widget->GetOriginalScreenInfo().additional_contents_scale);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNevaMediaService)) {
+    params_neva->set_override_create_media_player_neva(
+        base::BindRepeating(&media::CreateMojoMediaPlayer));
+    params_neva->set_override_create_media_platform_api(
+        base::BindRepeating(&media::CreateMojoMediaPlatformAPI));
+  }
+
+  if (use_neva_media && media::WebMediaPlayerNevaFactory::Playable(client))
+    return media::WebMediaPlayerNevaFactory::CreateWebMediaPlayerNeva(
+        web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
+        std::move(factory_selector), url_index_.get(), std::move(vfc),
+        base::Bind(&RenderThreadImpl::GetStreamTextureFactory,
+                   base::Unretained(content::RenderThreadImpl::current())),
+        std::move(params), std::move(params_neva));
+#endif
+
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
       std::move(factory_selector), url_index_.get(), std::move(vfc),
@@ -477,6 +534,9 @@ MediaFactory::CreateRendererFactorySelector(
     media::MediaLog* media_log,
     bool use_media_player,
     bool enable_mojo_renderer,
+#if defined(USE_NEVA_MEDIA)
+    bool use_neva_media,
+#endif
     media::DecoderFactory* decoder_factory,
     std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
     base::WeakPtr<media::MediaObserver>* out_media_observer) {
@@ -605,7 +665,18 @@ MediaFactory::CreateRendererFactorySelector(
   factory_selector->AddConditionalFactory(
       FactoryType::kCourier, std::move(courier_factory), is_remoting_cb);
 #endif
-
+#if defined(USE_NEVA_MEDIA)
+  if (use_neva_media && media::NevaMediaPlayerRendererFactory::Enabled()) {
+    factory_selector->AddFactory(
+        FactoryType::kNevaMediaPlayer,
+        std::make_unique<media::NevaMediaPlayerRendererFactory>(
+            media_log, decoder_factory,
+            base::Bind(&RenderThreadImpl::GetGpuFactories,
+                       base::Unretained(render_thread))));
+    factory_selector->SetBaseFactoryType(
+        FactoryType::kNevaMediaPlayer);
+  }
+#endif
   return factory_selector;
 }
 
@@ -640,6 +711,38 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       &video_frame_compositor_task_runner, settings, media_log.get());
 
+#if defined(USE_NEVA_WEBRTC)
+  const blink::mojom::RendererPreferences& renderer_prefs =
+      render_frame_->GetRendererPreferences();
+  const RenderWidget* render_widget = render_frame_->GetLocalRootRenderWidget();
+
+  std::unique_ptr<media::WebMediaPlayerParamsNeva> params_neva(
+      new media::WebMediaPlayerParamsNeva(base::BindRepeating(
+          &content::mojom::FrameVideoWindowFactory::CreateVideoWindow,
+          base::Unretained(render_frame_->GetFrameVideoWindowFactory()))));
+  params_neva->set_application_id(
+      blink::WebString::FromUTF8(renderer_prefs.application_id));
+  params_neva->set_use_unlimited_media_policy(
+      renderer_prefs.use_unlimited_media_policy);
+  params_neva->set_additional_contents_scale(
+      render_widget->GetOriginalScreenInfo().additional_contents_scale);
+
+  return new media::WebMediaPlayerWebRTC(
+      frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
+      blink::CreateWebMediaStreamRendererFactory(),
+      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
+      render_thread->GetIOTaskRunner(), video_frame_compositor_task_runner,
+      render_thread->GetMediaThreadTaskRunner(),
+      render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
+      sink_id,
+      base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
+                     parent_frame_sink_id,
+                     blink::WebSurfaceLayerBridge::ContainsVideo::kYes),
+      std::move(submitter), GetVideoSurfaceLayerMode(),
+      base::Bind(&RenderThreadImpl::GetStreamTextureFactory,
+                 base::Unretained(content::RenderThreadImpl::current())),
+      std::move(params_neva));
+#else
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
       blink::CreateWebMediaStreamRendererFactory(),
@@ -652,6 +755,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
                      parent_frame_sink_id,
                      blink::WebSurfaceLayerBridge::ContainsVideo::kYes),
       std::move(submitter), GetVideoSurfaceLayerMode());
+#endif
 }
 
 media::RendererWebMediaPlayerDelegate*

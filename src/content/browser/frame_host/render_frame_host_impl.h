@@ -151,6 +151,12 @@
 #include "media/mojo/mojom/remoting.mojom-forward.h"
 #endif
 
+#if defined(USE_NEVA_MEDIA)
+#include "content/browser/media/neva/frame_video_window_factory_impl.h"
+#include "content/common/media/neva/frame_media_controller.mojom.h"
+#include "content/public/common/neva/frame_video_window_factory.mojom.h"
+#endif
+
 class GURL;
 struct FrameHostMsg_OpenURL_Params;
 
@@ -1048,6 +1054,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::mojom::WebSandboxFlags active_sandbox_flags() {
     return active_sandbox_flags_;
   }
+
+#if defined(USE_NEVA_MEDIA)
+  // content::RendererFrameHost implementation
+  void PermitMediaActivation(int player_id) override;
+  void SetSuppressed(bool is_suppressed) override;
+  void SuspendMedia(int player_id) override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+#endif
 
   bool is_mhtml_document() { return is_mhtml_document_; }
 
@@ -2318,6 +2332,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindReportingObserver(
       mojo::PendingReceiver<blink::mojom::ReportingObserver>
           reporting_observer_receiver);
+
+#if defined(USE_NEVA_MEDIA)
+  // Lazily initializes and returns the mojom::FrameMediaController
+  // interface for this frame.
+  mojom::FrameMediaController* GetFrameMediaController();
+  mojo::AssociatedRemote<mojom::FrameMediaController> frame_media_controller_;
+
+  FrameVideoWindowFactoryImpl frame_video_window_factory_impl_{this};
+  mojo::AssociatedReceiver<content::mojom::FrameVideoWindowFactory>
+      frame_video_window_factory_receiver_{&frame_video_window_factory_impl_};
+#endif
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

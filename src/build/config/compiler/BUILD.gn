@@ -722,8 +722,13 @@ config("compiler_cpu_abi") {
       }
     } else if (current_cpu == "arm") {
       if (is_clang && !is_android && !is_nacl) {
-        cflags += [ "--target=arm-linux-gnueabihf" ]
-        ldflags += [ "--target=arm-linux-gnueabihf" ]
+        if (current_toolchain == "//build/toolchain/linux:clang_webos_arm" ) {
+          cflags += [ "--target=arm-linux-gnueabi" ]
+          ldflags += [ "--target=arm-linux-gnueabi" ]
+        } else {
+          cflags += [ "--target=arm-linux-gnueabihf" ]
+          ldflags += [ "--target=arm-linux-gnueabihf" ]
+        }
       }
       if (!is_nacl) {
         cflags += [

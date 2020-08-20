@@ -1,0 +1,144 @@
+// Copyright 2013-2019 LG Electronics, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef UI_EVENTS_KEYCODES_WEBOS_LGTV_KEYBOARD_CODES_H_
+#define UI_EVENTS_KEYCODES_WEBOS_LGTV_KEYBOARD_CODES_H_
+
+#define VK_LGE_RCU_RED    0x193
+#define VK_LGE_RCU_GREEN  0x194
+#define VK_LGE_RCU_YELLOW 0x195
+#define VK_LGE_RCU_BLUE   0x196
+
+#define VK_LGE_RCU_REWIND 0x19C
+#define VK_LGE_RCU_STOP 0x19D
+#define VK_LGE_RCU_PLAY 0x19F
+
+#define VK_LGE_RCU_RECORD 0x1A0 // 416
+#define VK_LGE_RCU_FASTFORWARD 0x1A1 // 417
+#define VK_LGE_RCU_TRACK_PREV 0x1A8 // 424
+#define VK_LGE_RCU_TRACK_NEXT 0x1A9 // 425
+
+#define VK_LGE_RCU_INFO 0x1C9 // 457
+#define VK_LGE_RCU_GUIDE 0x1CA // 458
+#define VK_LGE_RCU_TELETEXT 0x1CB // 459
+#define VK_LGE_RCU_SUBTITLE 0x1CC // 460
+#define VK_LGE_RCU_BACK 0x1CD // 461
+
+#define VK_LGE_RCU_EXIT 0x3E9 // 1001
+#define VK_LGE_RCU_SETTINGS 0x3EA // 1002
+#define VK_LGE_RCU_LIVETV 0x3EB // 1003
+#define VK_LGE_RCU_OPTION 0x3EC // 1004
+#define VK_LGE_RCU_RATIO 0x3ED // 1005
+#define VK_LGE_RCU_DASH 0x3EE // 1006
+#define VK_LGE_RCU_FLASHBACK 0x3EF // 1007
+#define VK_LGE_RCU_CAPTION 0x3F0 // 1008
+#define VK_LGE_RCU_2CHAUDIO 0x3F1 // 1009
+#define VK_LGE_RCU_MHP 0x3F2 // 1010
+#define VK_LGE_RCU_FAVORITES 0x3F3 // 1011
+#define VK_LGE_RCU_TV_VIDEO 0x3F4 // 1012
+#define VK_LGE_RCU_HOME 0x3F5 // 1013
+#define VK_LGE_RCU_TV_RADIO 0x3F6 // 1014
+#define VK_LGE_RCU_3D 0x3F7 // 1016
+#define VK_LGE_RCU_3DIGIT_INPUT 0x3F9 // 1017
+#define VK_LGE_RCU_SETCHANNEL 0x3FA // 1018
+#define VK_LGE_RCU_BML_DATA 0x3FB // 1019
+#define VK_LGE_RCU_JAPAN_DISPLAY 0x3FC // 1020
+#define VK_LGE_RCU_QMENU 0x3FD // 1021
+#define VK_LGE_RCU_TEXTMODE 0x3FE // 1022
+#define VK_LGE_RCU_TEXTMIX 0x3FF // 1023
+#define VK_LGE_RCU_TELETEXT_SUBPAGE 0x400 // 1024
+#define VK_LGE_RCU_TELETEXT_REVEAL 0x401 // 1025
+#define VK_LGE_RCU_TELETEXT_INTIME 0x402 // 1026
+#define VK_LGE_RCU_TELETEXT_HOLD 0x403 // 1027
+#define VK_LGE_RCU_AUDIODESC 0x404 // 1028
+#define VK_LGE_RCU_TELETEXT_POSITION 0x40D // 1037
+#define VK_LGE_RCU_TELETEXT_FREEZE 0x40E // 1038
+#define VK_LGE_RCU_TELETEXT_SIZE 0x316
+#define VK_LGE_RCU_SIMPLINK 0x412 // 1042
+#define VK_LGE_RCU_MULTI_PIP 0x418 // 1048
+#define VK_LGE_RCU_PRLIST 0x420 // 1056
+#define VK_LGE_RCU_SCREENREMOTE 0x426 // 1062
+#define VK_LGE_RCU_LIVE_ZOOM 0x427 // 1063
+#define VK_LGE_RCU_MAGNIFIER_ZOOM 0x428 // 1064
+
+// Commercial TV
+#define VK_LGE_RCU_HOTELMODE       0x40F // 1039
+#define VK_LGE_RCU_HOTELMODE_READY 0x410 // 1040
+#define VK_LGE_RCU_TVLINK          0x411 // 1041
+
+// Front/Local key
+#define VK_LGE_FACTORY_LOCAL_UP    0x413 // 1043
+#define VK_LGE_FACTORY_LOCAL_DOWN  0x414 // 1044
+#define VK_LGE_FACTORY_LOCAL_RIGHT 0x415 // 1045
+#define VK_LGE_FACTORY_LOCAL_LEFT  0x416 // 1046
+#define VK_LGE_FACTORY_LOCAL_ENTER 0x417 // 1047
+
+// Magic remote control key
+#define VK_LGE_MRCU_VOICE 0x500 // 1280
+#define VK_LGE_MRCU_LONG_SETTINGS 0x501 // 1281
+#define VK_LGE_MRCU_LONG_INPUT 0x502 // 1282
+
+// Japan remocon keycodes (same with IM keycodes)
+#define VK_LGE_RCU_BS  0x0340
+#define VK_LGE_RCU_CS1 0x034D
+#define VK_LGE_RCU_CS2 0x035A
+#define VK_LGE_RCU_TER 0x0367
+
+// Factory remocon keycodes (same with IM keycodes)
+#define VK_LGE_FACTORY_PIP 0x031A
+#define VK_LGE_FACTORY_PICMODE 0x0320
+#define VK_LGE_FACTORY_SNDMODE 0x0321
+#define VK_LGE_FACTORY_EYEQ 0x0381
+#define VK_LGE_FACTORY_INSTOP 0x0382
+#define VK_LGE_FACTORY_INSTART 0x0383
+#define VK_LGE_FACTORY_PICCHECK 0x0384
+#define VK_LGE_FACTORY_HDMICHECK 0x0385
+#define VK_LGE_FACTORY_SNDCHECK 0x0386
+#define VK_LGE_FACTORY_PONLY 0x0387
+#define VK_LGE_FACTORY_ADJ 0x0388
+#define VK_LGE_FACTORY_USBCHECK  0x0391
+#define VK_LGE_FACTORY_USB2CHECK 0x0392
+#define VK_LGE_FACTORY_TILT 0x0393
+#define VK_LGE_FACTORY_POWERON  0x03AE
+#define VK_LGE_FACTORY_POWEROFF 0x03AF
+#define VK_LGE_FACTORY_TV 0x03B3
+#define VK_LGE_FACTORY_VIDEO1 0x03B6
+#define VK_LGE_FACTORY_VIDEO2 0x03B7
+#define VK_LGE_FACTORY_COMPO1 0x03B9
+#define VK_LGE_FACTORY_COMPO2 0x03BA
+#define VK_LGE_FACTORY_RGBPC 0x03BC
+#define VK_LGE_FACTORY_HDMI1 0x03BF
+#define VK_LGE_FACTORY_HDMI2 0x03C0
+#define VK_LGE_FACTORY_HDMI3 0x03C1
+#define VK_LGE_FACTORY_HDMI4 0x03C2
+#define VK_LGE_FACTORY_VOL30 0x03C3
+#define VK_LGE_FACTORY_VOL50 0x03C4
+#define VK_LGE_FACTORY_VOL80 0x03C5
+#define VK_LGE_FACTORY_VOL100 0x03C6
+#define VK_LGE_FACTORY_SUBSTRATE 0x03C7
+#define VK_LGE_FACTORY_WHITEBAL  0x03C9
+#define VK_LGE_FACTORY_3DPATTERN 0x424 // 1060
+#define VK_LGE_FACTORY_SELFDIAGNOSIS 0x425 // 1061
+
+// webOS TV special keycodes
+#define VK_LGE_CURSOR_SHOW 0x0600 // 1536
+#define VK_LGE_CURSOR_HIDE 0x0601 // 1537
+#define VK_LGE_CAMERAVOICE 0x0602 // 1538
+
+// webOS3.5 hot key
+#define VK_LGE_RCU_IVI 0x0640 // 1600
+
+#endif  // UI_EVENTS_KEYCODES_WEBOS_LGTV_KEYBOARD_CODES_H_

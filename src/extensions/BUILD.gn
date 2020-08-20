@@ -203,6 +203,13 @@ repack("shell_and_test_pak") {
     "//ui/resources",
     "//ui/strings",
   ]
+
+  if (use_neva_appruntime && enable_memorymanager_webapi) {
+    sources += [
+      "$root_gen_dir/injection/public/resources/injection_resources.pak",
+    ]
+    deps += [ "//neva/injection:resources" ]
+  }
 }
 
 test("extensions_unittests") {

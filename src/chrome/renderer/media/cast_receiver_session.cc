@@ -29,6 +29,10 @@ class CastReceiverSession::AudioCapturerSource :
                   CaptureCallback* callback) override;
   void Start() override;
   void Stop() override;
+#if defined(USE_NEVA_SUSPEND_MEDIA_CAPTURE)
+  void Pause() override {}
+  void Resume() override {}
+#endif
   void SetVolume(double volume) override;
   void SetAutomaticGainControl(bool enable) override;
   void SetOutputDeviceForAec(const std::string& output_device_id) override;

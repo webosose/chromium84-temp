@@ -8,6 +8,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//net/features.gni")
+import("//neva/neva.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
@@ -1138,6 +1139,10 @@ component("net") {
       "url_request/websocket_handshake_userdata_key.h",
     ]
 
+    if (use_neva_appruntime && use_nss_certs && use_webos_dile_crypto && current_toolchain == default_toolchain) {
+      deps += [ "//net/ssl/neva" ]
+    }
+
     if (enable_reporting) {
       sources += [
         "network_error_logging/network_error_logging_service.cc",
@@ -1528,6 +1533,11 @@ component("net") {
         "base/directory_listing.cc",
         "base/directory_listing.h",
       ]
+
+      # APPDRM support.
+      if (current_toolchain == default_toolchain && use_neva_appruntime) {
+        deps += [ "//net/neva" ]
+      }
     }
 
     if (!disable_ftp_support) {

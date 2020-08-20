@@ -40,7 +40,12 @@
 namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
+#if defined(USE_NEVA_APPRUNTIME)
+    : host_(RenderWidgetHostImpl::From(host)),
+      hardware_resolution_(0, 0) {
+#else
     : host_(RenderWidgetHostImpl::From(host)) {
+#endif
   host_->render_frame_metadata_provider()->AddObserver(this);
 }
 
@@ -550,6 +555,10 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
 
 void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
+#if defined(USE_NEVA_APPRUNTIME)
+  if (!hardware_resolution_.IsEmpty())
+    screen_info->hardware_resolution = hardware_resolution_;
+#endif
 }
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
@@ -785,6 +794,12 @@ void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
     host()->SynchronizeVisualProperties();
 }
 
+#if defined(USE_NEVA_MEDIA)
+gfx::AcceleratedWidget RenderWidgetHostViewBase::GetAcceleratedWidget() {
+  return gfx::kNullAcceleratedWidget;
+}
+#endif
+
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
     host()->SynchronizeVisualProperties();
@@ -841,6 +856,12 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
       gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
   return true;
 }
+
+#if defined(USE_NEVA_APPRUNTIME)
+void RenderWidgetHostViewBase::SetHardwareResolution(int width, int height) {
+  hardware_resolution_ = gfx::Size(width, height);
+}
+#endif
 
 bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
     RenderWidgetHostViewBase* target_view,

@@ -235,6 +235,10 @@ void BookmarkLoadDetails::CreateUrlIndex() {
   url_index_ = base::MakeRefCounted<UrlIndex>(std::move(root_node_));
 }
 
+UrlIndex* BookmarkLoadDetails::url_index() {
+  return url_index_.get();
+}
+
 BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
     BookmarkClient* client,
     BookmarkNode::Type type) {

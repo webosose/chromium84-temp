@@ -201,6 +201,10 @@ struct DecoderBuffer {
   // Indicates whether or not this buffer is a random access point.
   bool is_key_frame;
 
+  // webOS specific flag. Indicates whether or not this buffer is converted
+  // by svp inband serializer.
+  bool use_svp_serialized_data;
+
   // Empty when |side_data| doesn't exist.
   array<uint8> side_data;
 

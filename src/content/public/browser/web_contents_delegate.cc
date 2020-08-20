@@ -295,6 +295,16 @@ bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs;
 }
 
+#if defined(USE_NEVA_APPRUNTIME)
+bool WebContentsDelegate::DecidePolicyForResponse(
+    bool is_main_frame,
+    int status_code,
+    const std::string& url,
+    const std::string& status_text) {
+  return false;
+}
+#endif
+
 int WebContentsDelegate::GetTopControlsHeight() {
   return 0;
 }

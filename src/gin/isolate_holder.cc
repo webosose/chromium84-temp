@@ -24,6 +24,10 @@
 #include "gin/v8_isolate_memory_dump_provider.h"
 #include "gin/v8_shared_memory_dump_provider.h"
 
+#if defined(USE_MEMORY_TRACE)
+#include "gin/neva/v8_isolate_memory_trace_provider.h"
+#endif
+
 namespace gin {
 
 namespace {
@@ -91,6 +95,9 @@ IsolateHolder::IsolateHolder(
 
   isolate_memory_dump_provider_.reset(
       new V8IsolateMemoryDumpProvider(this, task_runner));
+#if defined(USE_MEMORY_TRACE)
+  isolate_memory_trace_provider_.reset(new neva::V8IsolateMemoryTraceProvider(this));
+#endif
 }
 
 IsolateHolder::~IsolateHolder() {

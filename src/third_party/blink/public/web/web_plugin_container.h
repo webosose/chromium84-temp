@@ -40,6 +40,10 @@ namespace cc {
 class Layer;
 }
 
+#if defined(USE_NEVA_NPAPI)
+struct NPObject;
+#endif  // USE_NEVA_NPAPI
+
 namespace blink {
 
 class WebDocument;
@@ -153,6 +157,23 @@ class WebPluginContainer {
   virtual void RequestFullscreen() = 0;
   virtual bool IsFullscreenElement() const = 0;
   virtual void CancelFullscreen() = 0;
+
+#if defined(USE_NEVA_NPAPI)
+  // Allow the plugin to pass script objects to the browser. The container
+  // tracks ownership of script objects in order to allow browser references
+  // to them to be dropped when clearScriptObjects is called.
+  virtual void AllowScriptObjects() = 0;
+
+  // Drop any references to script objects allocated by the plugin.
+  // These are objects derived from WebPlugin::scriptableObject.  This is
+  // called when the plugin is being destroyed or if it needs to be
+  // re-initialized.
+  virtual void ClearScriptObjects() = 0;
+
+  // Returns the scriptable object associated with the DOM element
+  // containing the plugin.
+  virtual NPObject* GetScriptableObjectForElement() = 0;
+#endif  // USE_NEVA_NPAPI
 
  protected:
   ~WebPluginContainer() = default;

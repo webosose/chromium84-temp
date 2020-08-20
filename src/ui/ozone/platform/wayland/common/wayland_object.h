@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_OBJECT_H_
 #define UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_OBJECT_H_
 
-#include <wayland-client-core.h>
+#include <wayland-client.h>
 #include <memory>
 
 struct gtk_primary_selection_device;

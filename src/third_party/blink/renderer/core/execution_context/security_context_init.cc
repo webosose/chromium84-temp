@@ -250,6 +250,10 @@ void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
           security_origin_->BlockLocalAccessFromLocalOrigin();
         }
       }
+#if defined(USE_NEVA_APPRUNTIME)
+      if (settings->GetAllowLocalResourceLoad())
+        security_origin_->GrantLoadLocalResources();
+#endif
     }
   }
 

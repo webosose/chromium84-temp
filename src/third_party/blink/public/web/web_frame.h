@@ -40,6 +40,10 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "v8/include/v8.h"
 
+#if defined(USE_NEVA_NPAPI)
+struct NPObject;
+#endif  // USE_NEVA_NPAPI
+
 namespace blink {
 
 class Frame;
@@ -171,6 +175,19 @@ class BLINK_EXPORT WebFrame {
   // Detaches a frame from its parent frame if it has one.
   void DetachFromParent();
 #endif
+
+#if defined(USE_NEVA_NPAPI)
+  // Returns a NPObject corresponding to this frame's DOMWindow.
+  virtual NPObject* windowObject() const {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // Binds a NPObject as a property of this frame's DOMWindow.
+  virtual void bindToWindowObject(const WebString& name, NPObject*) {
+    NOTREACHED();
+  }
+#endif  // USE_NEVA_NPAPI
 
  protected:
   explicit WebFrame(mojom::TreeScopeType,

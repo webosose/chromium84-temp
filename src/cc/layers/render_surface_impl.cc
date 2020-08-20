@@ -454,6 +454,35 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
 
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+
+#if defined(USE_NEVA_PUNCH_HOLE)
+  bool force_draw_transparent_color = false;
+
+  // IsForceDrawTransparentColor() will be true only for NPAPI apps
+  // so it will not affect other apps
+  // Also don't check root surface.
+  if (render_target() != this) {
+    for (auto i = layer_tree_impl_->begin(), e = layer_tree_impl_->end();
+          i != e; ++i) {
+      if ((*i)->IsForceDrawTransparentColor()) {
+        force_draw_transparent_color = true;
+        quad->SetForceDrawTransparentColor(true);
+      }
+    }
+  }
+
+  if (force_draw_transparent_color) {
+    quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
+                 /*needs_blending=*/false, id(), mask_resource_id, mask_uv_rect,
+                 mask_texture_size, surface_contents_scale, FiltersOrigin(),
+                 tex_coord_rect,
+                 !layer_tree_impl_->settings().enable_edge_anti_aliasing,
+                 OwningEffectNode()->backdrop_filter_quality,
+                 can_use_cached_backdrop_filtered_result_);
+    return;
+  }
+#endif  // USE_NEVA_PUNCH_HOLE
+
   quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
                /*needs_blending=*/true, id(), mask_resource_id, mask_uv_rect,
                mask_texture_size, surface_contents_scale, FiltersOrigin(),

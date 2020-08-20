@@ -25,6 +25,13 @@ jumbo_component("linux") {
     "text_edit_key_bindings_delegate_auralinux.h",
   ]
 
+  if (is_desktop_linux) {
+    sources += [
+      "neva/input_method_auralinux_neva.cc",
+      "neva/input_method_auralinux_neva.h",
+    ]
+  }
+
   defines = [ "IS_UI_BASE_IME_LINUX_IMPL" ]
 
   public_deps = [ "//ui/base/ime" ]

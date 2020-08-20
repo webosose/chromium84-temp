@@ -25,6 +25,12 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
 
+#if defined(USE_NEVA_APPRUNTIME)
+#include "content/common/navigation_params_utils.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -202,6 +208,21 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   std::string header_value;
   HeaderDisposition disposition =
       ParseHeader(request->GetResponseHeaders(), &header_value);
+
+#if defined(USE_NEVA_APPRUNTIME)
+  FrameTreeNode* frame_tree_node = request->frame_tree_node();
+  if (frame_tree_node->current_frame_host()) {
+    RenderViewHost* rvh =
+        frame_tree_node->current_frame_host()->GetRenderViewHost();
+    WebPreferences prefs = rvh->GetWebkitPreferences();
+    if (prefs.x_frame_options_cross_origin_allowed &&
+        !prefs.web_security_enabled)
+      return NavigationThrottle::PROCEED;
+    if (disposition == HeaderDisposition::SAMEORIGIN &&
+        prefs.x_frame_options_cross_origin_allowed)
+      return NavigationThrottle::PROCEED;
+  }
+#endif
 
   switch (disposition) {
     case HeaderDisposition::CONFLICT:

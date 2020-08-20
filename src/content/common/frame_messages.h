@@ -272,6 +272,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(available_rect)
   IPC_STRUCT_TRAITS_MEMBER(orientation_type)
   IPC_STRUCT_TRAITS_MEMBER(orientation_angle)
+#if defined(USE_NEVA_MEDIA)
+  IPC_STRUCT_TRAITS_MEMBER(additional_contents_scale)
+#endif
 IPC_STRUCT_TRAITS_END()
 
 // Parameters structure for mojom::FrameHost::DidCommitProvisionalLoad.
