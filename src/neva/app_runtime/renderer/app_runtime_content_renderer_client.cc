@@ -79,6 +79,8 @@ class AppRuntimeContentRendererClient::AppRuntimeRenderThreadObserver
   }
 
   void NetworkStateChanged(bool online) override {
+    if (!render_frame_ || !render_frame_->GetWebFrame() || !renderer_client_)
+      return;
     if (online) {
       render_frame_->GetWebFrame()->StartReload(
           blink::WebFrameLoadType::kReload);
