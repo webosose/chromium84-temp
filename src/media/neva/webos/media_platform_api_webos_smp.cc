@@ -24,6 +24,7 @@
 #include <set>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -984,6 +985,23 @@ std::string MediaPlatformAPIWebOSSMP::MakeLoadPayload(uint64_t time) {
       case media::kCodecEAC3:
         contents["codec"]["audio"] = "AC3 PLUS";
         break;
+#if defined(USE_TV_MEDIA)
+      case media::kCodecOpus:
+        contents["codec"]["audio"] = "OPUS";
+        contents["opusInfo"]["channels"] =
+            std::to_string(audio_config_.channels());
+        contents["opusInfo"]["sampleRate"] =
+            static_cast<double>(audio_config_.samples_per_second()) / 1000.f;
+        if (audio_config_.extra_data().size() > 0) {
+          std::string encoded_header;
+          base::StringPiece raw_header(
+              reinterpret_cast<const char*>(audio_config_.extra_data().data()),
+              audio_config_.extra_data().size());
+          base::Base64Encode(raw_header, &encoded_header);
+          contents["opusInfo"]["streamHeader"] = encoded_header;
+        }
+        break;
+#endif
       default:
         std::move(error_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
         return std::string();
