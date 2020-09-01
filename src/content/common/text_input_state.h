@@ -72,6 +72,9 @@ struct CONTENT_EXPORT TextInputState {
   // |GetCompositionCharacterBounds|
   base::Optional<gfx::Rect> edit_context_control_bounds;
   base::Optional<gfx::Rect> edit_context_selection_bounds;
+
+  // Bounds for text input
+  gfx::Rect bounds;
 };
 
 }  // namespace content

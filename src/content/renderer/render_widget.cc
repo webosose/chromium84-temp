@@ -1369,6 +1369,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params.show_ime_if_needed = show_virtual_keyboard;
     params.always_hide_ime = always_hide_ime;
     params.reply_to_request = reply_to_request;
+    params.bounds = new_info.bounds;
     Send(new WidgetHostMsg_TextInputStateChanged(routing_id(), params));
 
     text_input_info_ = new_info;

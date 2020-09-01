@@ -88,6 +88,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
   IPC_STRUCT_TRAITS_MEMBER(reply_to_request)
   IPC_STRUCT_TRAITS_MEMBER(edit_context_control_bounds)
   IPC_STRUCT_TRAITS_MEMBER(edit_context_selection_bounds)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
 IPC_STRUCT_TRAITS_END()
 
 //
